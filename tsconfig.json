@@ -1,23 +1,11 @@
 {
   "compilerOptions": {
-    "declaration": false,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "lib": ["es6", "dom"],
-    "module": "es6",
-    "moduleResolution": "node",
+    "outDir": "./src/dist/",
     "sourceMap": true,
+    "noImplicitAny": true,
+    "module": "es6",
     "target": "es5",
-    "allowSyntheticDefaultImports":true,
-    "noImplicitAny":true,
-    "noImplicitThis":true,
-    "noImplicitReturns":true,
-    "strictNullChecks":true,
-    "skipLibCheck": true
-  },
-  "exclude": [
-    "node_modules",
-    "public" 
-  ],
-  "compileOnSave": false
+    "allowJs": true,
+    "moduleResolution": "node"
+  }
 }

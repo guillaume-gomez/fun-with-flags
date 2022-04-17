@@ -112,23 +112,28 @@ cv.onRuntimeInitialized = () => {
       const src = cv.imread(imgElement);
       const { width, height } = imgElement;
       const greyScaleImage: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+      const binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+      const inverseBinaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
       const dst: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+      
       cv.cvtColor(src, greyScaleImage, cv.COLOR_RGBA2GRAY, 0);
-      //can be optional for now
-      cv.threshold(greyScaleImage, greyScaleImage, 100, 200, cv.THRESH_BINARY_INV);
-      const canny : Mat = new cv.Mat();
+      cv.threshold(greyScaleImage, binaryThreshold, 100, 200, cv.THRESH_BINARY);
+      cv.threshold(greyScaleImage, inverseBinaryThreshold, 100, 200, cv.THRESH_BINARY_INV);
+      
       let contours : MatVector = new cv.MatVector();
       let hierarchy : Mat = new cv.Mat();
-      
-      // You can try more different parameters
-      //cv.Canny(src, canny, 125, 255);
-      //cv.findContours(canny, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-      cv.findContours(greyScaleImage, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
-      /*for (let i = 0; i < contours.size(); ++i) {
-        let hier = hierarchy.intPtr(0, i)
-        console.log(hier)
-      }*/
+      cv.findContours(binaryThreshold, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
       generateGeometries(contours, src);
+
+      contours.delete();
+      hierarchy.delete();
+      
+      contours = new cv.MatVector();
+      hierarchy = new cv.Mat();
+      cv.findContours(inverseBinaryThreshold, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+      generateGeometries(contours, src);
+
+      
       // draw contours with random Scalar
       for (let i = 0; i < contours.size(); ++i) {
         const color = new cv.Scalar(
@@ -138,7 +143,7 @@ cv.onRuntimeInitialized = () => {
         );
         cv.drawContours(dst, contours, i, color, 5, cv.LINE_8, hierarchy, 100);
       }
-      cv.imshow('canvasOutput', dst);
+      cv.imshow('canvasOutput', greyScaleImage);
       src.delete();
       dst.delete();
       contours.delete();

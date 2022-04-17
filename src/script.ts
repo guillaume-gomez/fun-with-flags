@@ -110,29 +110,33 @@ cv.onRuntimeInitialized = () => {
 
     imgElement.onload = () => {
       const src = cv.imread(imgElement);
-      cv.resize(src,src, new cv.Size(1200, 700), 0, 0, cv.INTER_LINEAR)
       const { width, height } = imgElement;
+      const greyScaleImage: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
       const dst: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
-      cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
+      cv.cvtColor(src, greyScaleImage, cv.COLOR_RGBA2GRAY, 0);
       //can be optional for now
-      cv.threshold(src, src, 100, 200, cv.THRESH_BINARY_INV);
+      cv.threshold(greyScaleImage, greyScaleImage, 100, 200, cv.THRESH_BINARY_INV);
       const canny : Mat = new cv.Mat();
       let contours : MatVector = new cv.MatVector();
       let hierarchy : Mat = new cv.Mat();
+      
       // You can try more different parameters
-      cv.Canny(src, canny, 125, 255);
+      //cv.Canny(src, canny, 125, 255);
       //cv.findContours(canny, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-      cv.findContours(src, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
-      for (let i = 0; i < contours.size(); ++i) {
-            let hier = hierarchy.intPtr(0, i)
-          console.log(hier)
-      }
-      generateGeometries(contours, width, height);
+      cv.findContours(greyScaleImage, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
+      /*for (let i = 0; i < contours.size(); ++i) {
+        let hier = hierarchy.intPtr(0, i)
+        console.log(hier)
+      }*/
+      generateGeometries(contours, src);
       // draw contours with random Scalar
       for (let i = 0; i < contours.size(); ++i) {
-          let color = new cv.Scalar(Math.round(Math.random() * 255), Math.round(Math.random() * 255),
-                                    Math.round(Math.random() * 255));
-          cv.drawContours(dst, contours, i, color, 5, cv.LINE_8, hierarchy, 100);
+        const color = new cv.Scalar(
+            Math.round(Math.random() * 255),
+            Math.round(Math.random() * 255),
+            Math.round(Math.random() * 255)
+        );
+        cv.drawContours(dst, contours, i, color, 5, cv.LINE_8, hierarchy, 100);
       }
       cv.imshow('canvasOutput', dst);
       src.delete();
@@ -152,12 +156,28 @@ function fromContoursToGeometryVertices(contour: Mat, width: number, height: num
     return geometryPoints;
 }
 
-function generateGeometries(contours : MatVector, width: number, height: number) {
+function geneterateColour(contour: Mat, image: Mat): THREE.Color {
+    const { data, cols } = image;
+    const channels = image.channels();
+
+    const centroid : any = cv.moments(contour);
+    const cX = Math.ceil(centroid["m10"] / centroid["m00"]);
+    const cY = Math.ceil(centroid["m01"] / centroid["m00"]);
+
+    const R = data[cY * cols * channels + cX * channels];
+    const G = data[cY * cols * channels + cX * channels + 1];
+    const B = data[cY * cols * channels + cX * channels + 2];
+    return new THREE.Color(R/255, G/255, B/255);
+}
+
+function generateGeometries(contours : MatVector, image: Mat) {
+    const { rows, cols } =  image;
     for (let i = 0; i < contours.size(); ++i) {
-        const vertices = fromContoursToGeometryVertices(contours.get(i), width, height);
-        console.log(vertices)
+        const contour = contours.get(i);
+        const vertices = fromContoursToGeometryVertices(contour, rows, cols);
         const geometry = generateGeometry(vertices);
-        const material = new THREE.MeshBasicMaterial({ color: 0x404040, wireframe:false, side: THREE.DoubleSide });
+        const color = geneterateColour(contour, image);
+        const material = new THREE.MeshBasicMaterial({ color, wireframe:false, side: THREE.DoubleSide });
         const mesh = new THREE.Mesh(geometry, material);
         scene.add(mesh);
     }

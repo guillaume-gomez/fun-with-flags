@@ -122,18 +122,17 @@ cv.onRuntimeInitialized = () => {
       
       let contours : MatVector = new cv.MatVector();
       let hierarchy : Mat = new cv.Mat();
-      cv.findContours(binaryThreshold, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
-      generateGeometries(contours, src);
-
-      contours.delete();
+      cv.findContours(binaryThreshold, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+      generateGeometries(contours, hierarchy, src);
+      console.log(hierarchy.channels())
+      /*contours.delete();
       hierarchy.delete();
       
       contours = new cv.MatVector();
       hierarchy = new cv.Mat();
-      cv.findContours(inverseBinaryThreshold, contours, hierarchy, cv.RETR_LIST, cv.CHAIN_APPROX_SIMPLE);
-      generateGeometries(contours, src);
+      cv.findContours(inverseBinaryThreshold, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+      generateGeometries(contours, hierarchy, src);*/
 
-      
       // draw contours with random Scalar
       for (let i = 0; i < contours.size(); ++i) {
         const color = new cv.Scalar(
@@ -143,7 +142,7 @@ cv.onRuntimeInitialized = () => {
         );
         cv.drawContours(dst, contours, i, color, 5, cv.LINE_8, hierarchy, 100);
       }
-      cv.imshow('canvasOutput', greyScaleImage);
+      cv.imshow('canvasOutput', binaryThreshold);
       src.delete();
       dst.delete();
       contours.delete();
@@ -161,6 +160,23 @@ function fromContoursToGeometryVertices(contour: Mat, width: number, height: num
     return geometryPoints;
 }
 
+function getHierarchyForContours(hierarchy : Mat, index: number): [number, number, number, number] {
+    const next = hierarchy.data32S[index * hierarchy.channels()    ];
+    const previous = hierarchy.data32S[index * hierarchy.channels() + 1];
+    const child = hierarchy.data32S[index * hierarchy.channels() + 2];
+    const parent = hierarchy.data32S[index * hierarchy.channels() + 3];
+    return [
+        next,
+        previous,
+        child,
+        parent
+    ];
+    
+}
+function getParent(hierarchy : Mat, index: number) : number {
+    return getHierarchyForContours(hierarchy, index)[3];
+}
+
 function geneterateColour(contour: Mat, image: Mat): THREE.Color {
     const { data, cols } = image;
     const channels = image.channels();
@@ -175,15 +191,18 @@ function geneterateColour(contour: Mat, image: Mat): THREE.Color {
     return new THREE.Color(R/255, G/255, B/255);
 }
 
-function generateGeometries(contours : MatVector, image: Mat) {
+function generateGeometries(contours : MatVector, hierarchy: Mat, image: Mat) {
+    const offset = 0.001;
     const { rows, cols } =  image;
     for (let i = 0; i < contours.size(); ++i) {
         const contour = contours.get(i);
         const vertices = fromContoursToGeometryVertices(contour, rows, cols);
         const geometry = generateGeometry(vertices);
         const color = geneterateColour(contour, image);
-        const material = new THREE.MeshBasicMaterial({ color, wireframe:false, side: THREE.DoubleSide });
+        const material = new THREE.MeshBasicMaterial({ color: Math.random() * 0x0FF05F, wireframe:false, side: THREE.DoubleSide });
         const mesh = new THREE.Mesh(geometry, material);
+        const child = getParent(hierarchy, i);
+        mesh.position.z = child * offset;
         scene.add(mesh);
     }
 }

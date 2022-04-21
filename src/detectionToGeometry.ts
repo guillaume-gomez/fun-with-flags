@@ -43,7 +43,7 @@ function getRandomColors(contour: Mat, image: Mat) : Array<[number, number, numb
     const coords = contour.data32S;
 
 
-    for(let i = 0; i < 20; i++) {
+    while(colors.length <= 20) {
         const indexX1 = Math.floor( Math.random() * (coords.length-1) / 2 ) * 2;
         const coordX1 = coords[indexX1];
         const coordY1 = coords[indexX1 + 1];
@@ -55,13 +55,9 @@ function getRandomColors(contour: Mat, image: Mat) : Array<[number, number, numb
         const middleCoordX = Math.floor((coordX1 + coordX2) / 2);
         const middleCoordY = Math.floor((coordY1 + coordY2) / 2);
 
-/*        console.log(coordX1, coordY1)
-        console.log(coordX2, coordY2)
-        console.log("-----ýýýýý---------")
-        console.log(middleCoordX, middleCoordY)
-        console.log(getColor(image, middleCoordX, middleCoordY))
-        console.log("------------------")*/
-        colors.push(getColor(image, middleCoordX, middleCoordY));
+        if(cv.pointPolygonTest(contour, new cv.Point(middleCoordX, middleCoordY), false) > 0) {
+            colors.push(getColor(image, middleCoordX, middleCoordY));
+        }
     }
     return colors;
 }

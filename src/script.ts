@@ -4,6 +4,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import gsap from 'gsap';
 import cv, { Mat, MatVector } from "opencv-ts";
 import { generateGeometries } from "./detectionToGeometry";
+import { createSelect, createImages } from "./generateHTMLElements";
 // Scene
 const scene = new THREE.Scene();
 // Sizes
@@ -46,7 +47,24 @@ function tick()
 
 
 window.onload = () => {
-    tick();
+  cv.onRuntimeInitialized = () => {
+    const selectContainer = document.getElementById("select-container");
+    if(selectContainer) {
+      const selectElement = createSelect(selectContainer);
+      selectElement.addEventListener('change', (e : any) => {
+        if(e && e.target) {
+          loadImage(e.target.value, 100, 200);
+        }
+      }, false);
+    }
+
+    const imagesContainer = document.getElementById("image-container");
+    if(imagesContainer) {
+      createImages(imagesContainer);
+    }
+  }
+
+  tick();
 }
 
 window.addEventListener('resize', () =>
@@ -89,22 +107,7 @@ window.addEventListener('dblclick', () =>
     }
 })
 
-
-cv.onRuntimeInitialized = () => {
-  const selectElement = document.getElementById('country-flags') as HTMLImageElement;
-
-  if(selectElement) {
-    selectElement.addEventListener('change', (e : any) => {
-      if(e && e.target) {
-        loadImage(e.target.value);
-      }
-    }, false);
-
-  }
-};
-
-
-function loadImage(imageDomId :string) {
+function loadImage(imageDomId :string, minThreshold: number, maxThreshold: number) {
   const src = cv.imread(imageDomId);
   const greyScaleImage: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
   const binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
@@ -112,8 +115,8 @@ function loadImage(imageDomId :string) {
   const dst: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
 
   cv.cvtColor(src, greyScaleImage, cv.COLOR_RGBA2GRAY, 0);
-  cv.threshold(greyScaleImage, binaryThreshold, 100, 200, cv.THRESH_BINARY);
-  cv.threshold(greyScaleImage, inverseBinaryThreshold, 100, 200, cv.THRESH_BINARY_INV);
+  cv.threshold(greyScaleImage, binaryThreshold, minThreshold, maxThreshold, cv.THRESH_BINARY);
+  cv.threshold(greyScaleImage, inverseBinaryThreshold, minThreshold, maxThreshold, cv.THRESH_BINARY_INV);
 
   let contours : MatVector = new cv.MatVector();
   let hierarchy : Mat = new cv.Mat();

@@ -5,7 +5,12 @@ function fromContoursToGeometryVertices(contour: Mat, width: number, height: num
     const coords = contour.data32S;
     let geometryPoints : THREE.Vector2[] = [];
     for(let index = 0; index < coords.length; index += 2) {
-        geometryPoints.push(new THREE.Vector2(coords[index] / width ,-coords[index + 1] / height ));
+        geometryPoints.push(
+            new THREE.Vector2(
+                coords[index] / width
+               ,-coords[index + 1] / height
+            )
+        );
     }
     return geometryPoints;
 }

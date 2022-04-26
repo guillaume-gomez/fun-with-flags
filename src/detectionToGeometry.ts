@@ -1,6 +1,10 @@
 import cv, { Mat, MatVector } from "opencv-ts";
 import * as THREE from 'three';
 
+function getRandomArbitrary(min: number, max: number) : number {
+  return Math.random() * (max - min) + min;
+}
+
 function fromContoursToGeometryVertices(contour: Mat, width: number, height: number) : THREE.Vector2[] {
     const coords = contour.data32S;
     let geometryPoints : THREE.Vector2[] = [];
@@ -27,10 +31,27 @@ function getHierarchyForContours(hierarchy : Mat, index: number): [number, numbe
         child,
         parent
     ];
-    
 }
+
 function getParent(hierarchy : Mat, index: number) : number {
     return getHierarchyForContours(hierarchy, index)[3];
+}
+
+function getChild(hierarchy: Mat, index: number) : number {
+    return getHierarchyForContours(hierarchy, index)[2];
+}
+
+
+function getChildren(hierarchy: Mat, parentIndex: number) {
+    let currentChild = getChild(hierarchy, parentIndex);
+    let children : number[] = [];
+
+    while(currentChild !== -1) {
+        children.push(currentChild);
+        currentChild = getChild(hierarchy, currentChild);
+    }
+
+    return children;
 }
 
 function getColor(image: Mat, x: number, y: number) : [number, number, number] {
@@ -43,36 +64,56 @@ function getColor(image: Mat, x: number, y: number) : [number, number, number] {
     return [R, G, B];
 }
 
-function getRandomColors(contour: Mat, image: Mat) : Array<[number, number, number]> {
+function getRandomColors(contours: MatVector, hierarchy: Mat, contourIndex: number, image: Mat) : Array<[number, number, number]> {
     let colors : Array<[number, number, number]> = [];
-    const coords = contour.data32S;
+    const coords = contours.get(contourIndex).data32S;
+    const childrenIndexes = getChildren(hierarchy, contourIndex);
 
+    const XPoints : number[] = coords.filter((coord, index) => index % 2 === 0);
+    const YPoints : number[] = coords.filter((coord, index) => index % 2 === 1);
+
+    const minX = Math.min(...XPoints);
+    const maxX = Math.max(...XPoints);
+
+    const minY = Math.min(...YPoints);
+    const maxY = Math.max(...YPoints);
 
     while(colors.length <= 20) {
-        const indexX1 = Math.floor( Math.random() * (coords.length-1) / 2 ) * 2;
-        const coordX1 = coords[indexX1];
-        const coordY1 = coords[indexX1 + 1];
+        const middleCoordX = Math.floor(getRandomArbitrary(minX, maxX));
+        const middleCoordY = Math.floor(getRandomArbitrary(minY, maxY));
 
-        const indexX2 = Math.floor( Math.random() * (coords.length-1) / 2 ) * 2;
-        const coordX2 = coords[indexX2]
-        const coordY2 = coords[indexX2 + 1];
-
-        const middleCoordX = Math.floor((coordX1 + coordX2) / 2);
-        const middleCoordY = Math.floor((coordY1 + coordY2) / 2);
-
-        if(cv.pointPolygonTest(contour, new cv.Point(middleCoordX, middleCoordY), false) > 0) {
+        
+        if(isPointValid(contours, contourIndex, middleCoordX, middleCoordY, childrenIndexes)) {
             colors.push(getColor(image, middleCoordX, middleCoordY));
         }
     }
     return colors;
 }
 
+function isInPolygon(contour: Mat, x: number, y : number) : boolean {
+    return cv.pointPolygonTest(contour, new cv.Point(x, y), false) > 0;
+}
+
+
+function isNotInChildPolygon(contours: MatVector, x: number, y: number, childrenIndexes: number[]) {
+    const child = childrenIndexes.find(childIndex => isInPolygon(contours.get(childIndex), x, y));
+    return !child;
+}
+
+function isPointValid(contours: MatVector, contourIndex: number, x: number, y: number, childrenIndexes?: number[]) : boolean {
+    if(!childrenIndexes || childrenIndexes.length === 0) {
+        return isInPolygon(contours.get(contourIndex), x, y);
+    } else {
+        return isInPolygon(contours.get(contourIndex), x, y) && isNotInChildPolygon(contours, x, y, childrenIndexes);
+    }
+}
+
 interface Dic {
     [key: string]: number
 }
-function geneterateColour(contour: Mat, image: Mat): THREE.Color {
-    //console.log("SHAPE", contour.data32S)
-    const randomColors = getRandomColors(contour, image);
+function geneterateColour(contours: MatVector, hierarchy: Mat, contourIndex: number, image: Mat): THREE.Color {
+    const contour = contours.get(contourIndex);
+    const randomColors = getRandomColors(contours, hierarchy, contourIndex, image);
     
     const centroid : any = cv.moments(contour);
     const cX = Math.ceil(centroid["m10"] / centroid["m00"]);
@@ -92,9 +133,6 @@ function geneterateColour(contour: Mat, image: Mat): THREE.Color {
             colorChoosedStringified = colorStringified;
         }
     });
-
-    //console.log(reduced)
-    //console.log(colorChoosedStringified)
     const [R, G, B] = colorChoosedStringified.split(",").map(color => parseInt(color));
 
     return new THREE.Color(R/255, G/255, B/255);
@@ -108,7 +146,7 @@ export function generateGeometries(contours : MatVector, hierarchy: Mat, image: 
         const contour = contours.get(i);
         const vertices = fromContoursToGeometryVertices(contour, rows, cols);
         const geometry = generateGeometry(vertices);
-        const color = geneterateColour(contour, image);
+        const color = geneterateColour(contours, hierarchy, i, image);
         const material = new THREE.MeshBasicMaterial({ color/*: Math.random() * 0x0FF05F*/, wireframe:false/*, side: THREE.DoubleSide*/ });
         const mesh = new THREE.Mesh(geometry, material);
         const child = getParent(hierarchy, i);

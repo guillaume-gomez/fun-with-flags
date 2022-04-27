@@ -1,12 +1,4 @@
-const countries = [
-  "argentine",
-  "brazilSimp",
-  "cote-ivoire",
-  "danemark",
-  "france",
-  "iceland",
-  "lebanon"
-];
+import { flagsParams } from "./flagsConfig";
 
 export function createSelect(parent: HTMLElement) : HTMLSelectElement {
    const select = document.createElement("select");
@@ -17,10 +9,10 @@ export function createSelect(parent: HTMLElement) : HTMLSelectElement {
    noneOption.innerHTML = "None";
    select.appendChild(noneOption);
 
-   countries.forEach(country => {
+   flagsParams.forEach(({ name }) => {
       const option = document.createElement("option");
-      option.value = country;
-      option.innerHTML = country;
+      option.value = name;
+      option.innerHTML = name;
       select.appendChild(option);
    });
    parent.appendChild(select);
@@ -28,11 +20,11 @@ export function createSelect(parent: HTMLElement) : HTMLSelectElement {
 }
 
 export function createImages(parent: HTMLElement) {
-  countries.forEach(country => {
+  flagsParams.forEach(({ name }) => {
     const img : HTMLImageElement = document.createElement("img");
-    img.id = country;
-    img.alt = `Flag of ${country}`;
-    img.src = require(`../static/textures/${country}.png`);
+    img.id = name;
+    img.alt = `Flag of ${name}`;
+    img.src = require(`../static/textures/${name}.png`);
     img.classList.add("imageSrc");
     parent.appendChild(img);
   });

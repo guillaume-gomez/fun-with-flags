@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import cv, { Mat, MatVector } from "opencv-ts";
 import { generateGeometries } from "./detectionToGeometry";
 import { createSelect, createImages } from "./generateHTMLElements";
+import { getThreshold } from "./flagsConfig";
 // Scene
 const scene = new THREE.Scene();
 // Sizes
@@ -53,7 +54,9 @@ window.onload = () => {
       const selectElement = createSelect(selectContainer);
       selectElement.addEventListener('change', (e : any) => {
         if(e && e.target) {
-          loadImage(e.target.value, 100, 200);
+            const countryName = e.target.value;
+            const { min, max } = getThreshold(countryName)
+            loadImage(countryName, min, max);
         }
       }, false);
     }

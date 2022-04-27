@@ -143,7 +143,7 @@ function loadImage(imageDomId :string, minThreshold: number, maxThreshold: numbe
   );
   cv.drawContours(dst, contours, i, color, 5, cv.LINE_8, hierarchy, 100);
   }
-  //cv.imshow('canvasOutput', binaryThreshold);
+  //cv.imshow('canvasTest', binaryThreshold);
   src.delete();
   dst.delete();
   contours.delete();

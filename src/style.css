@@ -20,3 +20,13 @@ body
 .imageSrc {
     display: none;
 }
+
+.debug {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+    align-items: center;
+    background: grey;
+    padding: 8px;
+}

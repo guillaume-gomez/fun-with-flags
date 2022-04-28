@@ -2,25 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-*
-{
-    margin: 0;
-    padding: 0;
-}
-
-{
-    position: fixed;
-    top: 0;
-    left: 0;
-    outline: none;
-}
-
-html,
-body
-{
-    //overflow: hidden;
-}
-
 .imageSrc {
     display: none;
 }
@@ -31,6 +12,5 @@ body
     justify-content: center;
     gap: 16px;
     align-items: center;
-    background: grey;
     padding: 8px;
 }

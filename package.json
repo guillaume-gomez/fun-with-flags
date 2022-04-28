@@ -3,15 +3,17 @@
     "author": "Guillaume Gomez <guillaume.gomez846@gmail.com>",
     "scripts": {
         "build": "webpack --config ./bundler/webpack.prod.js",
-        "dev": "webpack serve --config ./bundler/webpack.dev.js"
+        "dev": "webpack serve --config ./bundler/webpack.dev.js "
     },
     "dependencies": {
         "@babel/core": "^7.15.8",
         "@babel/preset-env": "^7.15.8",
+        "autoprefixer": "^10.4.5",
         "babel-loader": "^8.2.3",
         "clean-webpack-plugin": "^4.0.0",
         "copy-webpack-plugin": "^9.0.1",
         "css-loader": "^6.5.0",
+        "daisyui": "^2.14.2",
         "file-loader": "^6.2.0",
         "gsap": "^3.8.0",
         "html-loader": "^3.0.0",
@@ -19,6 +21,8 @@
         "mini-css-extract-plugin": "^2.4.3",
         "opencv-ts": "^1.2.26",
         "portfinder-sync": "0.0.2",
+        "postcss": "^8.4.12",
+        "postcss-loader": "^6.2.1",
         "style-loader": "^3.3.1",
         "three": "^0.134.0",
         "webpack": "^5.60.0",

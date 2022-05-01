@@ -10,7 +10,7 @@ interface FlagData {
 
 export const flagsParams : FlagData[] = [
     { name: "argentine", threshold: { min: 100, max: 200 } },
-    { name: "brazilSimp", threshold: { min: 100, max: 200 } },
+    { name: "brazilSimp", threshold: { min: 90, max: 255 } },
     { name: "cote-ivoire", threshold: { min: 200, max: 250 } },
     { name: "danemark", threshold: { min: 100, max: 200 } },
     { name: "france", threshold: { min: 100, max: 200 } },

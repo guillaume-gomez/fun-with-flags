@@ -1,4 +1,4 @@
-import { flagsParams } from "./flagsConfig";
+import { generateFlagParams } from "./flagsConfig";
 
 export function createSelect(parent: HTMLElement) : HTMLSelectElement {
    const select = document.createElement("select");
@@ -10,9 +10,9 @@ export function createSelect(parent: HTMLElement) : HTMLSelectElement {
    noneOption.innerHTML = "None";
    select.appendChild(noneOption);
 
-   flagsParams.forEach(({ name }) => {
+   generateFlagParams().forEach(({ key, name }) => {
       const option = document.createElement("option");
-      option.value = name;
+      option.value = key;
       option.innerHTML = name;
       select.appendChild(option);
    });
@@ -21,11 +21,11 @@ export function createSelect(parent: HTMLElement) : HTMLSelectElement {
 }
 
 export function createImages(parent: HTMLElement) {
-  flagsParams.forEach(({ name }) => {
+  generateFlagParams().forEach(({ key, name }) => {
     const img : HTMLImageElement = document.createElement("img");
-    img.id = name;
+    img.id = key;
     img.alt = `Flag of ${name}`;
-    img.src = require(`../static/textures/${name}.png`);
+    img.src = require(`../static/textures/${key}.png`);
     img.classList.add("imageSrc");
     parent.appendChild(img);
   });

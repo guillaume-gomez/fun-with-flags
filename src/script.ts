@@ -6,6 +6,7 @@ import cv, { Mat, MatVector } from "opencv-ts";
 import { generateGeometries } from "./detectionToGeometry";
 import { createSelect, createImages } from "./generateHTMLElements";
 import { getThreshold } from "./flagsConfig";
+
 // Scene
 const scene = new THREE.Scene();
 // Sizes
@@ -53,6 +54,11 @@ window.onload = () => {
     if(selectContainer) {
       const selectElement = createSelect(selectContainer);
       selectElement.addEventListener('change', (e : any) => {
+        // clear scenes
+        while(scene.children.length > 0) {
+            scene.remove(scene.children[0]);
+        }
+
         if(e && e.target) {
             const countryName = e.target.value;
             const { min, max } = getThreshold(countryName)
@@ -139,15 +145,16 @@ function loadImage(imageDomId :string, minThreshold: number, maxThreshold: numbe
 
   // draw contours with random Scalar
   for (let i = 0; i < contours.size(); ++i) {
-  const color = new cv.Scalar(
-      Math.round(Math.random() * 255),
-      Math.round(Math.random() * 255),
-      Math.round(Math.random() * 255)
-  );
-  cv.drawContours(dst, contours, i, color, 5, cv.LINE_8, hierarchy, 100);
+      const color = new cv.Scalar(
+          Math.round(Math.random() * 255),
+          Math.round(Math.random() * 255),
+          Math.round(Math.random() * 255)
+      );
+      cv.drawContours(dst, contours, i, color, 5, cv.LINE_8, hierarchy, 100);
   }
   cv.imshow('canvasTest', binaryThreshold);
   cv.imshow('canvasTest2', inverseBinaryThreshold);
+  cv.imshow('contours', dst);
   src.delete();
   dst.delete();
   contours.delete();

@@ -3,6 +3,7 @@ import { flagsParams } from "./flagsConfig";
 export function createSelect(parent: HTMLElement) : HTMLSelectElement {
    const select = document.createElement("select");
    select.id = "country-flags";
+   select.classList.add(...["select", "select-bordered"]);
 
    const noneOption = document.createElement("option");
    noneOption.value = "";

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { sortBy } from "lodash";
 import { Mat, MatVector } from "opencv-ts";
 import useOpenCV from "./customHooks/useOpenCV";
 import { FlagData, generateFlagParams, getThreshold } from "./flagsConfig";
@@ -8,22 +9,26 @@ import './App.css';
 
 function App() {
   const { openCVLoaded } = useOpenCV();
-  const [flags] = useState<FlagData[]>(generateFlagParams());
+  const [debugZone, setDebugZone] = useState<boolean>(false);
+  const [flags] = useState<FlagData[]>(sortBy(generateFlagParams(), 'name'));
   const [params, setParams] = useState<SceneParam>({min: null, max: null, countryCode: null});
 
   function onChange(countryCode: string) {
     const { min, max } = getThreshold(countryCode)
+    console.log(min, max)
     setParams({min, max, countryCode});
   }
 
   return (
     <div className="App">
-     <div className="debug">
-        <h5>Debug Zone</h5>
-            <canvas id="canvasTest"></canvas>
-            <canvas id="canvasTest2"></canvas>
-            <canvas id="contours"></canvas>
-        </div>
+       { debugZone &&
+          <div className="debug">
+            <h5>Debug Zone</h5>
+              <canvas id="canvasTest"></canvas>
+              <canvas id="canvasTest2"></canvas>
+              <canvas id="contours"></canvas>
+          </div>
+        }
         <FlagsSelect flags={flags} onChange={onChange} />
         <div id="image-container">
           {

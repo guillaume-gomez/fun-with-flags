@@ -112,7 +112,7 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
         );
         cv.drawContours(dst, contours, i, color, 5, cv.LINE_8, hierarchy, 100);
     }
-  /*  cv.imshow('canvasTest', binaryThreshold);
+    /*cv.imshow('canvasTest', binaryThreshold);
     cv.imshow('canvasTest2', inverseBinaryThreshold);
     cv.imshow('contours', dst);*/
     src.delete();

@@ -10,20 +10,21 @@ export interface FlagData {
     override: boolean;
 }
 
-/*const additionalFlagParams : FlagData[] = [
-    { key: "ar", name: "argentine", threshold: { min: 100, max: 200 }, override: false },
-    { key: "br", name: "brazilSimp", threshold: { min: 90, max: 255 }, override: true },
-    { key: "cr", name: "cote-ivoire", threshold: { min: 200, max: 250 }, override: true },
-    { key: "dn", name: "danemark", threshold: { min: 100, max: 200 }, override: true },
-    { key: "fr", name: "france", threshold: { min: 100, max: 200 }, override: false },
-    { key: "ic", name: "iceland", threshold: { min: 100, max: 200 }, override: false },
-    { key: "li", name: "lebanon", threshold: { min: 200, max: 250 }, override: false }
+const additionalFlagParams : FlagData[] = [
+    { key: "fr", name: "France", threshold: { min: 140, max: 242 }, override: true },
+    { key: "ci", name: "Côte d'Ivoire (Ivory Coast)", threshold: { min: 250, max: 255 }, override: true },
 ];
-*/
+
+
 export function generateFlagParams() : FlagData[] {
     const flags : Object = require("./flagsName.json");
     return Object.entries(flags).map(([key, name ]) => {
-        return { key, name, threshold: { min: 100, max: 200}, override: false };
+        const override = additionalFlagParams.find(({key: countryKey}) => countryKey === key);
+        if(override) {
+            return override;
+        } else {
+            return { key, name, threshold: { min: 100, max: 200}, override: false };
+        }
     });
 }
 

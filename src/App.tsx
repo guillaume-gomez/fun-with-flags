@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { sortBy } from "lodash";
-import { Mat, MatVector } from "opencv-ts";
 import useOpenCV from "./customHooks/useOpenCV";
 import { FlagData, generateFlagParams, getThreshold } from "./flagsConfig";
 import FlagsSelect from "./components/FlagsSelect";
@@ -11,11 +10,12 @@ function App() {
   const { openCVLoaded } = useOpenCV();
   const [debugZone, setDebugZone] = useState<boolean>(false);
   const [flags] = useState<FlagData[]>(sortBy(generateFlagParams(), 'name'));
+  const [minThresholdInput, setMinThresholdInput] = useState<number>(100);
+  const [maxThresholdInput, setMaxThresholdInput] = useState<number>(200);
   const [params, setParams] = useState<SceneParam>({min: null, max: null, countryCode: null});
 
   function onChange(countryCode: string) {
     const { min, max } = getThreshold(countryCode)
-    console.log(min, max)
     setParams({min, max, countryCode});
   }
 
@@ -29,7 +29,12 @@ function App() {
               <canvas id="contours"></canvas>
           </div>
         }
-        <FlagsSelect flags={flags} onChange={onChange} />
+        { openCVLoaded ?
+          <FlagsSelect flags={flags} onChange={onChange} /> :
+          <p>Loading Open CV</p>
+        }
+        <input type="range" min={0} max={255} value={minThresholdInput} onChange={(event) => setMinThresholdInput(parseInt(event.target.value, 10)) }/>
+        <input type="range" min={0} max={255} value={maxThresholdInput} onChange={(event) => setMaxThresholdInput(parseInt(event.target.value, 10))} />
         <div id="image-container">
           {
             flags.map(({key, name}) =>

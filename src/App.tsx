@@ -18,27 +18,29 @@ function App() {
 
   return (
     <div className="App">
-     <div className="debug">
+     <div className="flex flex-col justify-center items-center gap-12">
         <h5>Debug Zone</h5>
             <canvas id="canvasTest"></canvas>
             <canvas id="canvasTest2"></canvas>
             <canvas id="contours"></canvas>
-        </div>
+      </div>
+      <div className="flex flex-col justify-center items-center gap-12">
         <FlagsSelect flags={flags} onChange={onChange} />
         <div id="image-container">
-          {
-            flags.map(({key, name}) =>
-              <img
-                key={key}
-                className="imageSrc"
-                id={key}
-                src={`${process.env.PUBLIC_URL}/textures/${key}.png`}
-                alt={`Flag of ${name}`}
-              />
-            )
-          }
+            {
+              flags.map(({key, name}) =>
+                <img
+                  key={key}
+                  className="hidden"
+                  id={key}
+                  src={`${process.env.PUBLIC_URL}/textures/${key}.png`}
+                  alt={`Flag of ${name}`}
+                />
+              )
+            }
         </div>
         <ThreeCanvas params={params} />
+      </div>
     </div>
   );
 }

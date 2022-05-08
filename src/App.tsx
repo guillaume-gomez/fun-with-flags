@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Mat, MatVector } from "opencv-ts";
+import React, { useState, useEffect } from 'react';
+import { sortBy } from "lodash";
 import useOpenCV from "./customHooks/useOpenCV";
 import { FlagData, generateFlagParams, getThreshold } from "./flagsConfig";
 import FlagsSelect from "./components/FlagsSelect";
@@ -8,7 +8,10 @@ import './App.css';
 
 function App() {
   const { openCVLoaded } = useOpenCV();
-  const [flags] = useState<FlagData[]>(generateFlagParams());
+  const [debugZone, setDebugZone] = useState<boolean>(false);
+  const [flags] = useState<FlagData[]>(sortBy(generateFlagParams(), 'name'));
+  const [minThresholdInput, setMinThresholdInput] = useState<number>(100);
+  const [maxThresholdInput, setMaxThresholdInput] = useState<number>(200);
   const [params, setParams] = useState<SceneParam>({min: null, max: null, countryCode: null});
 
   function onChange(countryCode: string) {
@@ -18,7 +21,7 @@ function App() {
 
   return (
     <div className="App">
-     <div className="flex flex-col justify-center items-center gap-12">
+      <div className="flex flex-col justify-center items-center gap-12">
         <h5>Debug Zone</h5>
             <canvas id="canvasTest"></canvas>
             <canvas id="canvasTest2"></canvas>
@@ -26,6 +29,20 @@ function App() {
       </div>
       <div className="flex flex-col justify-center items-center gap-12">
         <FlagsSelect flags={flags} onChange={onChange} />
+       { debugZone &&
+          <div className="debug">
+            <h5>Debug Zone</h5>
+              <canvas id="canvasTest"></canvas>
+              <canvas id="canvasTest2"></canvas>
+              <canvas id="contours"></canvas>
+          </div>
+        }
+        { openCVLoaded ?
+          <FlagsSelect flags={flags} onChange={onChange} /> :
+          <p>Loading Open CV</p>
+        }
+        <input type="range" min={0} max={255} value={minThresholdInput} onChange={(event) => setMinThresholdInput(parseInt(event.target.value, 10)) }/>
+        <input type="range" min={0} max={255} value={maxThresholdInput} onChange={(event) => setMaxThresholdInput(parseInt(event.target.value, 10))} />
         <div id="image-container">
             {
               flags.map(({key, name}) =>

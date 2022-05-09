@@ -18,13 +18,13 @@ function FlagsSelect({ flags, onChange } : FlagsSelectProps) {
         </label>
         <select
           id="country-flags"
-          className="select select-bordered"
+          className="select select-primary"
           onChange={(event) => onChange(event.target.value)}
         >
-          <option value="">None</option>
+          <option value="" key="none">None</option>
           {
             flags.map(({key, name}) =>
-              <option value={key}>{name}</option>
+              <option key={key} value={key}>{name}</option>
             )
           }
         </select>

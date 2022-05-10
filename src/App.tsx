@@ -4,33 +4,33 @@ import useOpenCV from "./customHooks/useOpenCV";
 import { FlagData, generateFlagParams, getThreshold } from "./flagsConfig";
 import FlagsSelect from "./components/FlagsSelect";
 import ThreeCanvas, { SceneParam } from "./components/ThreeCanvas";
+import CustomRange from "./components/CustomRange";
 import './App.css';
 
 function App() {
   const { openCVLoaded } = useOpenCV();
-  const [debugZone, setDebugZone] = useState<boolean>(false);
+  const [debugZone, setDebugZone] = useState<boolean>(true);
   const [flags] = useState<FlagData[]>(sortBy(generateFlagParams(), 'name'));
   const [minThresholdInput, setMinThresholdInput] = useState<number>(100);
   const [maxThresholdInput, setMaxThresholdInput] = useState<number>(200);
   const [params, setParams] = useState<SceneParam>({min: null, max: null, countryCode: null});
 
   function onChange(countryCode: string) {
-    const { min, max } = getThreshold(countryCode)
+    const { min, max } = getThreshold(countryCode);
     setParams({min, max, countryCode});
+    setMinThresholdInput(min);
+    setMaxThresholdInput(max);
+  }
+
+  function reRunDebug() {
+    setParams({...params , min: minThresholdInput, max: maxThresholdInput})
   }
 
   return (
     <div className="App">
       <div className="flex flex-col justify-center items-center gap-12">
-        <h5>Debug Zone</h5>
-            <canvas id="canvasTest"></canvas>
-            <canvas id="canvasTest2"></canvas>
-            <canvas id="contours"></canvas>
-      </div>
-      <div className="flex flex-col justify-center items-center gap-12">
-        <FlagsSelect flags={flags} onChange={onChange} />
        { debugZone &&
-          <div className="debug">
+          <div className="flex flex-col justify-center items-center gap-12">
             <h5>Debug Zone</h5>
               <canvas id="canvasTest"></canvas>
               <canvas id="canvasTest2"></canvas>
@@ -41,8 +41,13 @@ function App() {
           <FlagsSelect flags={flags} onChange={onChange} /> :
           <p>Loading Open CV</p>
         }
-        <input type="range" min={0} max={255} value={minThresholdInput} onChange={(event) => setMinThresholdInput(parseInt(event.target.value, 10)) }/>
-        <input type="range" min={0} max={255} value={maxThresholdInput} onChange={(event) => setMaxThresholdInput(parseInt(event.target.value, 10))} />
+        <CustomRange value={minThresholdInput} onChange={setMinThresholdInput} />
+        <CustomRange value={maxThresholdInput} onChange={setMaxThresholdInput} />
+        <textarea
+          className="textarea textarea-primary"
+          value={`{ key: ${params.countryCode}, name: "EnterCountry", threshold: { min: ${minThresholdInput}, max: ${maxThresholdInput} }, override: true },`}
+        />
+        <button className="btn btn-primary" onClick={reRunDebug}>ReRun</button>
         <div id="image-container">
             {
               flags.map(({key, name}) =>

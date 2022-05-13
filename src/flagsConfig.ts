@@ -19,7 +19,11 @@ const additionalFlagParams : FlagData[] = [
     { key: "az", name: "Azerbaijan", threshold: { min: 106, max: 137 }, override: true },
     { key: "be", name: "Belgium", threshold: { min: 153, max: 178 }, override: true },
     { key: "co", name: "Colombie", threshold: { min: 65, max: 100 }, override: true},
+    { key: "cy", name: "Cyprus", threshold: { min: 239, max: 255 }, override: true },
+    { key: "ee", name: "Estonia", threshold: { min: 20, max: 40 }, override: true },
     { key: "fr", name: "France", threshold: { min: 140, max: 242 }, override: true },
+    { key: "ir", name: "Iran", threshold: { min: 150, max: 200 }, override: true },
+    { key: "ga", name: "Gabon", threshold: { min: 158, max: 242 }, override: true },
     { key: "ci", name: "Côte d'Ivoire (Ivory Coast)", threshold: { min: 250, max: 255 }, override: true },
 ];
 

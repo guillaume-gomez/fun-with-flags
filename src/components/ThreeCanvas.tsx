@@ -33,6 +33,9 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
           width: 500, //window.innerWidth,
           height: 500, //window.innerHeight
       }
+
+      scene.current.background = new THREE.Color( 0x3c3c3c );
+
       // Axe Helper
       const axesHelper = new THREE.AxesHelper(2);
       scene.current.add(axesHelper);
@@ -56,6 +59,7 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
   }, [canvasRef]);
 
   useEffect(() => {
+    console.log(min, max, countryCode)
     if(min && max && countryCode) {
       // clear scenes
       while(scene.current.children.length > 0) {
@@ -112,9 +116,9 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
         );
         cv.drawContours(dst, contours, i, color, 5, cv.LINE_8, hierarchy, 100);
     }
-    /*cv.imshow('canvasTest', binaryThreshold);
+    cv.imshow('canvasTest', binaryThreshold);
     cv.imshow('canvasTest2', inverseBinaryThreshold);
-    cv.imshow('contours', dst);*/
+    cv.imshow('contours', dst);
     src.delete();
     dst.delete();
     contours.delete();

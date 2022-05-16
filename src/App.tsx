@@ -32,9 +32,11 @@ function App() {
        { debugZone &&
           <div className="flex flex-col justify-center items-center gap-12">
             <h5>Debug Zone</h5>
-              <canvas id="canvasTest"></canvas>
-              <canvas id="canvasTest2"></canvas>
-              <canvas id="contours"></canvas>
+              <div className="flex flex-col gap-5">
+                <canvas id="canvasTest"></canvas>
+                <canvas id="canvasTest2"></canvas>
+                <canvas id="contours"></canvas>
+              </div>
           </div>
         }
         { openCVLoaded ?
@@ -45,7 +47,7 @@ function App() {
         <CustomRange value={maxThresholdInput} onChange={setMaxThresholdInput} />
         <textarea
           className="textarea textarea-primary"
-          value={`{ key: ${params.countryCode}, name: "EnterCountry", threshold: { min: ${minThresholdInput}, max: ${maxThresholdInput} }, override: true },`}
+          value={`{ key: "${params.countryCode}", name: "EnterCountry", threshold: { min: ${minThresholdInput}, max: ${maxThresholdInput} }, override: true },`}
         />
         <button className="btn btn-primary" onClick={reRunDebug}>ReRun</button>
         <div id="image-container">

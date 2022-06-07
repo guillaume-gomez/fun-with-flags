@@ -63,7 +63,8 @@ function getColor(image: Mat, x: number, y: number) : [number, number, number] {
     const B = data[y * cols * channels + x * channels + 2];
     return [R, G, B];
 }
-
+// use montecarlo (pick random point in the shape to detect the color)
+// the problem can be the shape has children on it
 function getRandomColors(contours: MatVector, hierarchy: Mat, contourIndex: number, image: Mat) : Array<[number, number, number]> {
     let colors : Array<[number, number, number]> = [];
     const coords = contours.get(contourIndex).data32S;
@@ -155,6 +156,26 @@ export function generateGeometries(contours : MatVector, hierarchy: Mat, image: 
     }
     return meshes;
 }
+
+
+export function generateGeometriesByColor(contours : MatVector, hierarchy: Mat, image: Mat, [R, G, B]: [number, number, number], index: number) : THREE.Mesh[] {
+    let meshes : THREE.Mesh[] = [];
+    const offset = 0.001;
+    const { rows, cols } =  image;
+    for (let i = 0; i < contours.size(); ++i) {
+        const contour = contours.get(i);
+        const vertices = fromContoursToGeometryVertices(contour, rows, cols);
+        const geometry = generateGeometry(vertices);
+        const color = new THREE.Color(R/255, G/255, B/255) //geneterateColour(contours, hierarchy, i, image);
+        const material = new THREE.MeshBasicMaterial({ color/*: Math.random() * 0x0FF05F*/, wireframe:false/*, side: THREE.DoubleSide*/ });
+        const mesh = new THREE.Mesh(geometry, material);
+        const child = getParent(hierarchy, i);
+        mesh.position.z = index *  offset;//child * offset * Math.random();
+        meshes.push(mesh);
+    }
+    return meshes;
+}
+
 
 function generateGeometry(vertices: THREE.Vector2[]) : THREE.BufferGeometry {
     const shape = new THREE.Shape(vertices);

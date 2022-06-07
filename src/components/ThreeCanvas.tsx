@@ -1,8 +1,9 @@
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { Mat, MatVector } from "opencv-ts";
+import { computePalette } from "../palette";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { generateGeometries } from "../detectionToGeometry";
+import { generateGeometries, generateGeometriesByColor } from "../detectionToGeometry";
 import useOpenCV from "../customHooks/useOpenCV";
 import useAnimationFrame from "../customHooks/useAnimationFrame";
 
@@ -59,7 +60,6 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
   }, [canvasRef]);
 
   useEffect(() => {
-    console.log(min, max, countryCode)
     if(min && max && countryCode) {
       // clear scenes
       while(scene.current.children.length > 0) {
@@ -69,7 +69,7 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
       const axesHelper = new THREE.AxesHelper(2);
       scene.current.add(axesHelper);
 
-      loadImage(countryCode, min, max);
+      loadImageV2(countryCode);
     }
   }, [min, max, countryCode])
 
@@ -80,13 +80,41 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
     }
   }
 
+  // find all the colors in the image and run findcountours based on this colors
+  function loadImageV2(imageDomId: string) {
+    const src = cv.imread(imageDomId);
+    const colorPixels = computePalette(src);
+
+    let binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+    colorPixels.forEach(([r, g, b], index) => {
+      let low = new cv.Mat(src.rows, src.cols, src.type(), [r - 1, g - 1, b -1, 255]);
+      let high = new cv.Mat(src.rows, src.cols, src.type(), [r + 1, g + 1, b + 1, 255]);
+
+      let contours : MatVector = new cv.MatVector();
+      let hierarchy : Mat = new cv.Mat();
+
+      cv.inRange(src, low, high, binaryThreshold);
+      cv.findContours(binaryThreshold, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+
+      let meshes = generateGeometriesByColor(contours, hierarchy, src, [r,g,b], index);
+      scene.current.add(...meshes);
+      console.log(meshes)
+
+
+      contours.delete();
+      hierarchy.delete();
+    });
+
+  }
+
+  //use threshold to detect colors and shape with a binarythreshold and its opposite
   function loadImage(imageDomId :string, minThreshold: number, maxThreshold: number) {
     const src = cv.imread(imageDomId);
     const greyScaleImage: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
     const binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
     const inverseBinaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
     const dst: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
-
+    
     cv.cvtColor(src, greyScaleImage, cv.COLOR_RGBA2GRAY, 0);
     cv.threshold(greyScaleImage, binaryThreshold, minThreshold, maxThreshold, cv.THRESH_BINARY);
     cv.threshold(greyScaleImage, inverseBinaryThreshold, minThreshold, maxThreshold, cv.THRESH_BINARY_INV);

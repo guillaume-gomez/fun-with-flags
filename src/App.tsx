@@ -9,7 +9,7 @@ import './App.css';
 
 function App() {
   const { openCVLoaded } = useOpenCV();
-  const [debugZone, setDebugZone] = useState<boolean>(true);
+  const [debugZone, setDebugZone] = useState<boolean>(false);
   const [flags] = useState<FlagData[]>(sortBy(generateFlagParams(), 'name'));
   const [minThresholdInput, setMinThresholdInput] = useState<number>(100);
   const [maxThresholdInput, setMaxThresholdInput] = useState<number>(200);
@@ -43,13 +43,19 @@ function App() {
           <FlagsSelect flags={flags} onChange={onChange} /> :
           <p>Loading Open CV</p>
         }
-        <CustomRange value={minThresholdInput} onChange={setMinThresholdInput} />
-        <CustomRange value={maxThresholdInput} onChange={setMaxThresholdInput} />
-        <textarea
-          className="textarea textarea-primary"
-          value={`{ key: "${params.countryCode}", name: "EnterCountry", threshold: { min: ${minThresholdInput}, max: ${maxThresholdInput} }, override: true },`}
-        />
-        <button className="btn btn-primary" onClick={reRunDebug}>ReRun</button>
+        
+        {debugZone && 
+          (<>
+            <CustomRange value={minThresholdInput} onChange={setMinThresholdInput} />
+            <CustomRange value={maxThresholdInput} onChange={setMaxThresholdInput} />
+            <textarea
+              className="textarea textarea-primary"
+              value={`{ key: "${params.countryCode}", name: "EnterCountry", threshold: { min: ${minThresholdInput}, max: ${maxThresholdInput} }, override: true },`}
+            />
+            <button className="btn btn-primary" onClick={reRunDebug}>ReRun</button>
+          </>
+          )
+        }
         <div id="image-container">
             {
               flags.map(({key, name}) =>

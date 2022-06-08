@@ -12,27 +12,42 @@ export type pixel = [number, number, number];
 */
 // todo remove colors that occurs less than 1%
 // + sort by proportion of colors desc
+
+interface ColorInImage {
+  [key:string]: number;
+}
+
 export function computePalette(image: Mat) : pixel[] {
-  // nested tool function to convert string pixel
-  function convertPixelStringToPixelNumber(pixelString: string ) : pixel {
-    const pixel = (pixelString.split(",").map(colorString => parseInt(colorString, 10)) as pixel);
-    return pixel;
-  }
   // loop through pixels to determine colors
-  const colorsSet : Set<string> = new Set();
+  let colorsInImage : ColorInImage = {};
   for(let x = 0; x < image.cols; x++) {
     for (let y = 0; y < image.rows; y++) {
-      colorsSet.add(getColor(image, x, y).toString());
+      const key = getColor(image, x, y).toString();
+      if(colorsInImage[key]) {
+        colorsInImage[key] += 1;
+      } else {
+        colorsInImage[key] = 1;
+      }
     }
   }
 
-  const colorsPixels : pixel[] = Array.from(colorsSet).map(pixelColor => convertPixelStringToPixelNumber(pixelColor));
-  return colorsPixels;
+  const filteredColorInImage : Array<[string, number]> = filterColorInImageTo(colorsInImage, image.cols * image.rows, .01);
+
+  const palette : pixel[] = filteredColorInImage.map(([pixel, _]) => convertPixelStringToPixelNumber(pixel));
+  return palette;
 }
 
+function filterColorInImageTo(colorsInImage: ColorInImage, nbPixel: number, keepPercentage: number) : Array<[string, number]> {
+  const result = Object.entries(colorsInImage).filter(([colorString, nbOccurence]) => (nbOccurence/nbPixel) >= keepPercentage);
+  return result.sort(function([_pixelStringA, occurenceA], [_pixelStringB, occurenceB]) { return occurenceA - occurenceB});
+}
 
+ function convertPixelStringToPixelNumber(pixelString: string ) : pixel {
+  const pixel = (pixelString.split(",").map(colorString => parseInt(colorString, 10)) as pixel);
+  return pixel;
+ }
 
-function getColor(image: Mat, x: number, y: number) : [number, number, number] {
+export function getColor(image: Mat, x: number, y: number) : [number, number, number] {
     const { data, cols } = image;
     const channels = image.channels();
 

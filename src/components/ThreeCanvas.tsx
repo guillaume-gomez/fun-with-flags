@@ -37,14 +37,13 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
 
       scene.current.background = new THREE.Color( 0x3c3c3c );
 
-      // Axe Helper
-      const axesHelper = new THREE.AxesHelper(2);
-      scene.current.add(axesHelper);
+      addHelpers();
 
       // Camera
       camera.current = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
-      camera.current.position.z = 3;
+      camera.current.position.set( 0, 0.75, 3 );
       scene.current.add(camera.current);
+
 
       // Renderer
       renderer.current = new THREE.WebGLRenderer({
@@ -65,13 +64,51 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
       while(scene.current.children.length > 0) {
         scene.current.remove(scene.current.children[0]);
       }
-      // Axe Helper
-      const axesHelper = new THREE.AxesHelper(2);
-      scene.current.add(axesHelper);
 
-      loadImageV2(countryCode);
+
+      generateFlagsByPixelsColorOccurance(countryCode);
+      addLights();
+      addHelpers();
     }
   }, [min, max, countryCode])
+
+  function addLights() {
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
+      scene.current.add(ambientLight);
+
+
+      const spotLight = new THREE.SpotLight(0xffffff, 0.5, 10, Math.PI * 0.1, 0.25, 1)
+      spotLight.position.set(0, -5, 0)
+      scene.current.add(spotLight)
+
+      const pointLight = new THREE.PointLight(0xff9000, 0.25)
+      pointLight.position.set(-1, 0, 1)
+      scene.current.add(pointLight)
+
+      const pointLight2 = new THREE.PointLight(0xff9000, 0.25)
+      pointLight2.position.set(0, 0, 1)
+      scene.current.add(pointLight2)
+
+
+      const pointLight3 = new THREE.PointLight(0xff9000, 0.25)
+      pointLight2.position.set(1, 0, 1)
+      scene.current.add(pointLight3)
+
+/*      const pointLightHelper = new THREE.PointLightHelper(pointLight)
+      scene.current.add(pointLightHelper)
+
+      const rectAreaLightHelper = new THREE.SpotLightHelper(spotLight)
+      scene.current.add(rectAreaLightHelper)*/
+  }
+
+  function addHelpers() {
+    // Axe Helper
+    const axesHelper = new THREE.AxesHelper(2);
+    scene.current.add(axesHelper);
+
+    const gridHelper = new THREE.GridHelper();
+    scene.current.add(gridHelper);
+  }
 
 
   function animate(deltaTime: number) {
@@ -81,10 +118,13 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
   }
 
   // find all the colors in the image and run findcountours based on this colors
-  function loadImageV2(imageDomId: string) {
+  function generateFlagsByPixelsColorOccurance(imageDomId: string) {
     const src = cv.imread(imageDomId);
     const colorPixels = computePalette(src);
+    console.log(colorPixels)
 
+
+    let group = new THREE.Group();
     let binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
     colorPixels.forEach(([r, g, b], index) => {
       let low = new cv.Mat(src.rows, src.cols, src.type(), [r - 1, g - 1, b -1, 255]);
@@ -97,18 +137,21 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
       cv.findContours(binaryThreshold, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
 
       let meshes = generateGeometriesByColor(contours, hierarchy, src, [r,g,b], index);
-      scene.current.add(...meshes);
-      console.log(meshes)
+      group.add(...meshes);
 
 
       contours.delete();
       hierarchy.delete();
     });
 
+    const bbox = new THREE.Box3().setFromObject(group);
+    group.position.set(-(bbox.min.x + bbox.max.x) / 2, -(bbox.min.y + bbox.max.y) / 2, -(bbox.min.z + bbox.max.z) / 2);
+    scene.current.add(group);
+
   }
 
   //use threshold to detect colors and shape with a binarythreshold and its opposite
-  function loadImage(imageDomId :string, minThreshold: number, maxThreshold: number) {
+  function generateFlagsByThreshold(imageDomId :string, minThreshold: number, maxThreshold: number) {
     const src = cv.imread(imageDomId);
     const greyScaleImage: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
     const binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);

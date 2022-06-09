@@ -17,15 +17,23 @@ export interface SceneParam {
 
 interface ThreeCanvasProps {
  params: SceneParam;
+ velocity: number;
 }
 
-function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
+const MAX_Z = 1;
+const MIN_Z = -1;
+const MOVE_VELOCITY =  0.001;
+
+
+function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvasProps) {
   const { cv } = useOpenCV();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scene = useRef(new THREE.Scene());
+  const groupRef = useRef<THREE.Group|null>(null);
+  const groupRefDirections = useRef<number[]>([]);
   const camera = useRef<THREE.PerspectiveCamera | null>(null);
   const renderer = useRef<THREE.WebGLRenderer| null>(null);
-  const { play } = useAnimationFrame(animate);
+  const { play, stop } = useAnimationFrame(animate);
 
   useEffect(() => {
     if(canvasRef.current) {
@@ -64,13 +72,19 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
       while(scene.current.children.length > 0) {
         scene.current.remove(scene.current.children[0]);
       }
+      groupRef.current = null;
 
 
       generateFlagsByPixelsColorOccurance(countryCode);
       addLights();
       addHelpers();
     }
-  }, [min, max, countryCode])
+  }, [min, max, countryCode]);
+
+  useEffect(() => {
+    stop();
+    play();
+  }, [velocity])
 
   function addLights() {
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
@@ -114,6 +128,18 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
   function animate(deltaTime: number) {
     if(renderer.current && scene.current && camera.current) {
       renderer.current.render(scene.current, camera.current);
+      if(groupRef.current) {
+        groupRef.current.children.forEach((flagItem, index) => {
+          if(flagItem.position.z > MAX_Z) {
+            groupRefDirections.current[index] = -1;
+          }
+          if(flagItem.position.z < MIN_Z) {
+            groupRefDirections.current[index] = 1;
+          }
+          flagItem.position.z += groupRefDirections.current[index] * velocity;
+        });
+      }
+      //console.log(groupRef.current)
     }
   }
 
@@ -125,6 +151,8 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
 
 
     let group = new THREE.Group();
+    group.name = "MY_FLAG_GROUP";
+
     let binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
     colorPixels.forEach(([r, g, b], index) => {
       let low = new cv.Mat(src.rows, src.cols, src.type(), [r - 1, g - 1, b -1, 255]);
@@ -147,7 +175,10 @@ function ThreeCanvas({params: { min, max, countryCode }} : ThreeCanvasProps) {
     const bbox = new THREE.Box3().setFromObject(group);
     group.position.set(-(bbox.min.x + bbox.max.x) / 2, -(bbox.min.y + bbox.max.y) / 2, -(bbox.min.z + bbox.max.z) / 2);
     scene.current.add(group);
-
+    // add ref for the render
+    groupRef.current = group;
+    // store the direction for move
+    groupRefDirections.current = group.children.map(flagItem => 1);
   }
 
   //use threshold to detect colors and shape with a binarythreshold and its opposite

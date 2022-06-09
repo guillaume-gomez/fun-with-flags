@@ -9,6 +9,7 @@ import './App.css';
 
 function App() {
   const { openCVLoaded } = useOpenCV();
+  const [velocity, setVelocity] = useState<number>(0.001);
   const [debugZone, setDebugZone] = useState<boolean>(false);
   const [flags] = useState<FlagData[]>(sortBy(generateFlagParams(), 'name'));
   const [minThresholdInput, setMinThresholdInput] = useState<number>(100);
@@ -43,7 +44,14 @@ function App() {
           <FlagsSelect flags={flags} onChange={onChange} /> :
           <p>Loading Open CV</p>
         }
-        
+        <input
+          type="range"
+          className="range range-primary"
+          min={0}
+          max={10}
+          value={velocity * 1000}
+          onChange={(e) => setVelocity(parseInt(e.target.value,10)/1000)}
+        />
         {debugZone && 
           (<>
             <CustomRange value={minThresholdInput} onChange={setMinThresholdInput} />
@@ -69,7 +77,7 @@ function App() {
               )
             }
         </div>
-        <ThreeCanvas params={params} />
+        <ThreeCanvas params={params} velocity={velocity}/>
       </div>
     </div>
   );

@@ -3,9 +3,13 @@ import * as THREE from 'three';
 import { Mat, MatVector } from "opencv-ts";
 import { computePalette } from "../palette";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { generateGeometries, generateGeometriesByColor } from "../detectionToGeometry";
+import {
+  generateFlagsByThreshold as utilGenerateFlagsByThreshold,
+  generateFlagsByPixelsColorOccurance as utilGenerateFlagsByPixelsColorOccurance
+ } from "../detectionToGeometry";
 import useOpenCV from "../customHooks/useOpenCV";
 import useAnimationFrame from "../customHooks/useAnimationFrame";
+//import * as workerPath from "file-loader?name=[name].js!./test.worker";
 
 
 export interface SceneParam {
@@ -20,8 +24,8 @@ interface ThreeCanvasProps {
  velocity: number;
 }
 
-const MAX_Z = 1;
-const MIN_Z = -1;
+const MAX_Z = 0.5;
+const MIN_Z = -0.5;
 const MOVE_VELOCITY =  0.001;
 
 
@@ -34,6 +38,8 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
   const camera = useRef<THREE.PerspectiveCamera | null>(null);
   const renderer = useRef<THREE.WebGLRenderer| null>(null);
   const { play, stop } = useAnimationFrame(animate);
+  //const worker = new Worker(workerPath);
+
 
   useEffect(() => {
     if(canvasRef.current) {
@@ -145,34 +151,13 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
 
   // find all the colors in the image and run findcountours based on this colors
   function generateFlagsByPixelsColorOccurance(imageDomId: string) {
-    const src = cv.imread(imageDomId);
-    const colorPixels = computePalette(src);
-    console.log(colorPixels)
-
-
+    const meshes = utilGenerateFlagsByPixelsColorOccurance(cv, imageDomId);
     let group = new THREE.Group();
     group.name = "MY_FLAG_GROUP";
-
-    let binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
-    colorPixels.forEach(([r, g, b], index) => {
-      let low = new cv.Mat(src.rows, src.cols, src.type(), [r - 1, g - 1, b -1, 255]);
-      let high = new cv.Mat(src.rows, src.cols, src.type(), [r + 1, g + 1, b + 1, 255]);
-
-      let contours : MatVector = new cv.MatVector();
-      let hierarchy : Mat = new cv.Mat();
-
-      cv.inRange(src, low, high, binaryThreshold);
-      cv.findContours(binaryThreshold, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
-
-      let meshes = generateGeometriesByColor(contours, hierarchy, src, [r,g,b], index);
-      group.add(...meshes);
-
-
-      contours.delete();
-      hierarchy.delete();
-    });
+    group.add(...meshes);
 
     const bbox = new THREE.Box3().setFromObject(group);
+    console.log(bbox)
     group.position.set(-(bbox.min.x + bbox.max.x) / 2, -(bbox.min.y + bbox.max.y) / 2, -(bbox.min.z + bbox.max.z) / 2);
     scene.current.add(group);
     // add ref for the render
@@ -183,48 +168,8 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
 
   //use threshold to detect colors and shape with a binarythreshold and its opposite
   function generateFlagsByThreshold(imageDomId :string, minThreshold: number, maxThreshold: number) {
-    const src = cv.imread(imageDomId);
-    const greyScaleImage: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
-    const binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
-    const inverseBinaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
-    const dst: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
-    
-    cv.cvtColor(src, greyScaleImage, cv.COLOR_RGBA2GRAY, 0);
-    cv.threshold(greyScaleImage, binaryThreshold, minThreshold, maxThreshold, cv.THRESH_BINARY);
-    cv.threshold(greyScaleImage, inverseBinaryThreshold, minThreshold, maxThreshold, cv.THRESH_BINARY_INV);
-
-    let contours : MatVector = new cv.MatVector();
-    let hierarchy : Mat = new cv.Mat();
-    cv.findContours(binaryThreshold, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
-    let meshes = generateGeometries(contours, hierarchy, src);
+    const meshes = utilGenerateFlagsByThreshold(cv, imageDomId, minThreshold, maxThreshold);
     scene.current.add(...meshes);
-
-    contours.delete();
-    hierarchy.delete();
-
-    contours = new cv.MatVector();
-    hierarchy = new cv.Mat();
-    cv.findContours(inverseBinaryThreshold, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
-    meshes = generateGeometries(contours, hierarchy, src);
-    scene.current.add(...meshes);
-
-
-    // draw contours with random Scalar
-    for (let i = 0; i < contours.size(); ++i) {
-        const color = new cv.Scalar(
-            Math.round(Math.random() * 255),
-            Math.round(Math.random() * 255),
-            Math.round(Math.random() * 255)
-        );
-        cv.drawContours(dst, contours, i, color, 5, cv.LINE_8, hierarchy, 100);
-    }
-    cv.imshow('canvasTest', binaryThreshold);
-    cv.imshow('canvasTest2', inverseBinaryThreshold);
-    cv.imshow('contours', dst);
-    src.delete();
-    dst.delete();
-    contours.delete();
-    hierarchy.delete();
   }
 
   return (

@@ -131,7 +131,7 @@ function geneterateColour(contours: MatVector, hierarchy: Mat, contourIndex: num
     return new THREE.Color(R/255, G/255, B/255);
 }
 
-export function generateGeometries(contours : MatVector, hierarchy: Mat, image: Mat) : THREE.Mesh[] {
+function generateGeometries(contours : MatVector, hierarchy: Mat, image: Mat) : THREE.Mesh[] {
     let meshes : THREE.Mesh[] = [];
     const offset = 0.001;
     const { rows, cols } =  image;
@@ -150,7 +150,7 @@ export function generateGeometries(contours : MatVector, hierarchy: Mat, image: 
 }
 
 
-export function generateGeometriesByColor(contours : MatVector, hierarchy: Mat, image: Mat, [R, G, B]: [number, number, number], index: number) : THREE.Mesh[] {
+function generateGeometriesByColor(contours : MatVector, hierarchy: Mat, image: Mat, [R, G, B]: [number, number, number], index: number) : THREE.Mesh[] {
     let meshes : THREE.Mesh[] = [];
     //const offset = 0.001;
     const offset = 0.1;
@@ -173,4 +173,84 @@ function generateGeometry(vertices: THREE.Vector2[]) : THREE.BufferGeometry {
     const shape = new THREE.Shape(vertices);
     const geometry = new THREE.ExtrudeGeometry(shape, {depth: 0.5, bevelEnabled: false, /*bevelSegments: 1, steps: 1, bevelSize: 0.1, bevelThickness: 0.1*/});
     return geometry;
+}
+
+
+  //use threshold to detect colors and shape with a binarythreshold and its opposite
+export function generateFlagsByThreshold(cv: any, imageDomId :string, minThreshold: number, maxThreshold: number) : THREE.Mesh[] {
+    const src = cv.imread(imageDomId);
+    const greyScaleImage: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+    const binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+    const inverseBinaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+    const dst: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+    let meshes : THREE.Mesh[] = [];
+
+    cv.cvtColor(src, greyScaleImage, cv.COLOR_RGBA2GRAY, 0);
+    cv.threshold(greyScaleImage, binaryThreshold, minThreshold, maxThreshold, cv.THRESH_BINARY);
+    cv.threshold(greyScaleImage, inverseBinaryThreshold, minThreshold, maxThreshold, cv.THRESH_BINARY_INV);
+
+    let contours : MatVector = new cv.MatVector();
+    let hierarchy : Mat = new cv.Mat();
+    cv.findContours(binaryThreshold, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+    meshes = [...meshes, ...generateGeometries(contours, hierarchy, src)];
+
+    contours.delete();
+    hierarchy.delete();
+
+    contours = new cv.MatVector();
+    hierarchy = new cv.Mat();
+    /*
+        DEBUG
+        cv.findContours(inverseBinaryThreshold, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+        meshes = [...meshes, ...generateGeometries(contours, hierarchy, src)];
+
+        // draw contours with random Scalar
+        for (let i = 0; i < contours.size(); ++i) {
+            const color = new cv.Scalar(
+                Math.round(Math.random() * 255),
+                Math.round(Math.random() * 255),
+                Math.round(Math.random() * 255)
+            );
+            cv.drawContours(dst, contours, i, color, 5, cv.LINE_8, hierarchy, 100);
+        }
+        cv.imshow('canvasTest', binaryThreshold);
+        cv.imshow('canvasTest2', inverseBinaryThreshold);
+        cv.imshow('contours', dst);
+    */
+    src.delete();
+    dst.delete();
+    contours.delete();
+    hierarchy.delete();
+
+    return meshes;
+}
+
+// find all the colors in the image and run findcountours based on this colors
+export function generateFlagsByPixelsColorOccurance(cv: any, imageDomId: string) : THREE.Mesh[] {
+    const src = cv.imread(imageDomId);
+    const colorPixels = computePalette(src);
+    let meshes : THREE.Mesh[] = [];
+    console.log(colorPixels)
+
+
+    let binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
+    colorPixels.forEach(([r, g, b], index) => {
+      let low = new cv.Mat(src.rows, src.cols, src.type(), [r - 1, g - 1, b -1, 255]);
+      let high = new cv.Mat(src.rows, src.cols, src.type(), [r + 1, g + 1, b + 1, 255]);
+
+      let contours : MatVector = new cv.MatVector();
+      let hierarchy : Mat = new cv.Mat();
+
+      cv.inRange(src, low, high, binaryThreshold);
+      cv.findContours(binaryThreshold, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+
+      meshes = [...meshes, ...generateGeometriesByColor(contours, hierarchy, src, [r,g,b], index)];
+
+
+      contours.delete();
+      hierarchy.delete();
+    });
+
+    src.delete();
+    return meshes;
 }

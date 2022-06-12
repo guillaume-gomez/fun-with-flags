@@ -1,7 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
-import { Mat, MatVector } from "opencv-ts";
-import { computePalette } from "../palette";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
   generateFlagsByThreshold as utilGenerateFlagsByThreshold,
@@ -9,8 +7,6 @@ import {
  } from "../detectionToGeometry";
 import useOpenCV from "../customHooks/useOpenCV";
 import useAnimationFrame from "../customHooks/useAnimationFrame";
-//import * as workerPath from "file-loader?name=[name].js!./test.worker";
-
 
 export interface SceneParam {
   min: number | null;
@@ -26,8 +22,6 @@ interface ThreeCanvasProps {
 
 const MAX_Z = 0.5;
 const MIN_Z = -0.5;
-const MOVE_VELOCITY =  0.001;
-
 
 function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvasProps) {
   const { cv } = useOpenCV();
@@ -38,7 +32,6 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
   const camera = useRef<THREE.PerspectiveCamera | null>(null);
   const renderer = useRef<THREE.WebGLRenderer| null>(null);
   const { play, stop } = useAnimationFrame(animate);
-  //const worker = new Worker(workerPath);
 
 
   useEffect(() => {
@@ -79,7 +72,6 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
         scene.current.remove(scene.current.children[0]);
       }
       groupRef.current = null;
-
 
       generateFlagsByPixelsColorOccurance(countryCode);
       addLights();
@@ -167,6 +159,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
   }
 
   //use threshold to detect colors and shape with a binarythreshold and its opposite
+  // deprecated :)
   function generateFlagsByThreshold(imageDomId :string, minThreshold: number, maxThreshold: number) {
     const meshes = utilGenerateFlagsByThreshold(cv, imageDomId, minThreshold, maxThreshold);
     scene.current.add(...meshes);

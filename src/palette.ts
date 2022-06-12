@@ -1,15 +1,7 @@
-import cv, { Mat } from "opencv-ts";
-//import ColorThief from 'colorthief';
+import { Mat } from "opencv-ts";
 
-
-const PALETTE_BASE_COLOR = 20;
 export type pixel = [number, number, number];
 
-/*export function generateColorPalette(image: HTMLImageElement, paletteSize: number  = PALETTE_BASE_COLOR) : pixel[] {
-  let colorThief = new ColorThief();
-  return colorThief.getPalette(image, paletteSize);
-}
-*/
 // todo remove colors that occurs less than 1%
 // + sort by proportion of colors desc
 

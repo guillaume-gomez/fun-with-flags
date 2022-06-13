@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { sortBy } from "lodash";
 import useOpenCV from "./customHooks/useOpenCV";
 import { FlagData, generateFlagParams, getThreshold } from "./flagsConfig";
@@ -10,7 +10,7 @@ import './App.css';
 function App() {
   const { openCVLoaded } = useOpenCV();
   const [velocity, setVelocity] = useState<number>(0.001);
-  const [debugZone, setDebugZone] = useState<boolean>(false);
+  const [debugZone] = useState<boolean>(false);
   const [flags] = useState<FlagData[]>(sortBy(generateFlagParams(), 'name'));
   const [minThresholdInput, setMinThresholdInput] = useState<number>(100);
   const [maxThresholdInput, setMaxThresholdInput] = useState<number>(200);

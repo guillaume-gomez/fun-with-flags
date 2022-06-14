@@ -7,6 +7,7 @@ import {
  } from "../detectionToGeometry";
 import useOpenCV from "../customHooks/useOpenCV";
 import useAnimationFrame from "../customHooks/useAnimationFrame";
+import { create3dPointLighting, createPlane, createHelpers, createLights } from "./threejsUtils";
 
 export interface SceneParam {
   min: number | null;
@@ -20,8 +21,8 @@ interface ThreeCanvasProps {
  velocity: number;
 }
 
-const MAX_Z = 0.5;
-const MIN_Z = -0.5;
+const MAX_Z = 0.3;
+const MIN_Z = 0;
 
 function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvasProps) {
   const { cv } = useOpenCV();
@@ -38,17 +39,16 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
     if(canvasRef.current) {
       // Sizes
       const sizes = {
-          width: 500, //window.innerWidth,
-          height: 500, //window.innerHeight
+          width: window.innerWidth - 50,
+          height: 1000, //window.innerHeight
       }
 
       scene.current.background = new THREE.Color( 0x3c3c3c );
 
-      addHelpers();
 
       // Camera
       camera.current = new THREE.PerspectiveCamera(75, sizes.width / sizes.height);
-      camera.current.position.set( 0, 0.75, 3 );
+      camera.current.position.set( 0, 0.75, 2 );
       scene.current.add(camera.current);
 
 
@@ -62,6 +62,11 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
       // Controls
       const controls = new OrbitControls( camera.current, renderer.current.domElement );
       controls.enablePan = true;
+
+      scene.current.add(createPlane());
+      //scene.current.add(create3dPointLighting());
+      scene.current.add(createLights());
+      scene.current.add(...createHelpers());
     }
   }, [canvasRef]);
 
@@ -73,10 +78,11 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
       }
       groupRef.current = null;
 
-      generateFlagsByPixelsColorOccurance(countryCode);
-      addPlane();
-      addLights();
-      addHelpers();
+      scene.current.add(createPlane());
+      //scene.current.add(create3dPointLighting());
+      scene.current.add(createLights());
+      //scene.current.add(...createHelpers());
+      scene.current.add(generateFlagsByPixelsColorOccurance(countryCode));
 
     }
   }, [min, max, countryCode]);
@@ -85,54 +91,6 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
     stop();
     play();
   }, [velocity])
-
-  function addLights() {
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.8)
-      scene.current.add(ambientLight);
-
-
-      const spotLight = new THREE.SpotLight(0xffffff, 0.5, 10, Math.PI * 0.1, 0.25, 1)
-      spotLight.position.set(0, -5, 0)
-      scene.current.add(spotLight)
-
-      const pointLight = new THREE.PointLight(0xff9000, 0.25)
-      pointLight.position.set(-1, 0, 1)
-      scene.current.add(pointLight)
-
-      const pointLight2 = new THREE.PointLight(0xff9000, 0.25)
-      pointLight2.position.set(0, 0, 1)
-      scene.current.add(pointLight2)
-
-
-      const pointLight3 = new THREE.PointLight(0xff9000, 0.25)
-      pointLight2.position.set(1, 0, 1)
-      scene.current.add(pointLight3)
-
-/*      const pointLightHelper = new THREE.PointLightHelper(pointLight)
-      scene.current.add(pointLightHelper)
-
-      const rectAreaLightHelper = new THREE.SpotLightHelper(spotLight)
-      scene.current.add(rectAreaLightHelper)*/
-  }
-
-  function addHelpers() {
-    // Axe Helper
-    const axesHelper = new THREE.AxesHelper(2);
-    scene.current.add(axesHelper);
-
-    const gridHelper = new THREE.GridHelper();
-    scene.current.add(gridHelper);
-  }
-
-  function addPlane() {
-    const planeGeometry = new THREE.BoxGeometry(3, 3, 0.5);
-    const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xE3D081 });
-    const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
-    planeMesh.rotateX(-Math.PI/2);
-    planeMesh.position.setY(-0.25);
-    scene.current.add(planeMesh);
-  }
-
 
   function animate(deltaTime: number) {
     if(renderer.current && scene.current && camera.current) {
@@ -153,7 +111,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
   }
 
   // find all the colors in the image and run findcountours based on this colors
-  function generateFlagsByPixelsColorOccurance(imageDomId: string) {
+  function generateFlagsByPixelsColorOccurance(imageDomId: string) : THREE.Group {
     const meshes = utilGenerateFlagsByPixelsColorOccurance(cv, imageDomId);
     let group = new THREE.Group();
     group.name = "MY_FLAG_GROUP";
@@ -162,11 +120,13 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
     const bbox = new THREE.Box3().setFromObject(group);
     console.log(bbox)
     group.position.set(-(bbox.min.x + bbox.max.x) / 2, -(bbox.min.y + bbox.max.y), -(bbox.min.z + bbox.max.z) / 2);
-    scene.current.add(group);
+
     // add ref for the render
     groupRef.current = group;
     // store the direction for move
     groupRefDirections.current = group.children.map(flagItem => 1);
+
+    return group;
   }
 
   //use threshold to detect colors and shape with a binarythreshold and its opposite

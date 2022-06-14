@@ -74,8 +74,10 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
       groupRef.current = null;
 
       generateFlagsByPixelsColorOccurance(countryCode);
+      addPlane();
       addLights();
       addHelpers();
+
     }
   }, [min, max, countryCode]);
 
@@ -122,6 +124,15 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
     scene.current.add(gridHelper);
   }
 
+  function addPlane() {
+    const planeGeometry = new THREE.BoxGeometry(3, 3, 0.5);
+    const planeMaterial = new THREE.MeshBasicMaterial({ color: 0xE3D081 });
+    const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+    planeMesh.rotateX(-Math.PI/2);
+    planeMesh.position.setY(-0.25);
+    scene.current.add(planeMesh);
+  }
+
 
   function animate(deltaTime: number) {
     if(renderer.current && scene.current && camera.current) {
@@ -150,7 +161,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
 
     const bbox = new THREE.Box3().setFromObject(group);
     console.log(bbox)
-    group.position.set(-(bbox.min.x + bbox.max.x) / 2, -(bbox.min.y + bbox.max.y) / 2, -(bbox.min.z + bbox.max.z) / 2);
+    group.position.set(-(bbox.min.x + bbox.max.x) / 2, -(bbox.min.y + bbox.max.y), -(bbox.min.z + bbox.max.z) / 2);
     scene.current.add(group);
     // add ref for the render
     groupRef.current = group;

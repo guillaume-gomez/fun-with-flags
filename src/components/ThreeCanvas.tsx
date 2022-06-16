@@ -71,8 +71,11 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
   }, [canvasRef]);
 
   useEffect(() => {
+    console.log(countryCode)
+    console.log(min, max)
     if(min && max && countryCode) {
       // clear scenes
+      console.log("fjdkfkj")
       while(scene.current.children.length > 0) {
         scene.current.remove(scene.current.children[0]);
       }

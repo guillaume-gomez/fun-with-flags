@@ -4,10 +4,11 @@ import { FlagData } from "../flagsConfig";
 interface FlagsSelectProps {
   flags: FlagData[];
   onChange: (countryCode: string) => void;
+  value: string;
 }
 
 
-function FlagsSelect({ flags, onChange } : FlagsSelectProps) {
+function FlagsSelect({ flags, onChange, value } : FlagsSelectProps) {
   return (
     <div
         className="form-control w-full max-w-xs"
@@ -17,6 +18,7 @@ function FlagsSelect({ flags, onChange } : FlagsSelectProps) {
             <span className="label-text">Select a country</span>
         </label>
         <select
+          value={value}
           id="country-flags"
           className="select select-primary"
           onChange={(event) => onChange(event.target.value)}

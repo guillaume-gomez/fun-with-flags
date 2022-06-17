@@ -61,6 +61,11 @@ export function generateFlagParams() : FlagData[] {
     });
 }
 
+export function listOfFlagKeys() :string[] {
+    const flagsData = generateFlagParams();
+    return flagsData.map(flag => flag.key);
+}
+
 
 
 export function getThreshold(countryCode: string) : Threshold {

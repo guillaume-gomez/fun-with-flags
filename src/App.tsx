@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { sortBy } from "lodash";
 import useOpenCV from "./customHooks/useOpenCV";
-import { FlagData, generateFlagParams, getThreshold } from "./flagsConfig";
+import { FlagData, generateFlagParams, getThreshold,listOfFlagKeys } from "./flagsConfig";
 import FlagsSelect from "./components/FlagsSelect";
 import ThreeCanvas, { SceneParam } from "./components/ThreeCanvas";
 import CustomRange from "./components/CustomRange";
 import './App.css';
+
+const flagKeys = listOfFlagKeys();
 
 function App() {
   const { openCVLoaded } = useOpenCV();
@@ -15,6 +17,16 @@ function App() {
   const [minThresholdInput, setMinThresholdInput] = useState<number>(100);
   const [maxThresholdInput, setMaxThresholdInput] = useState<number>(200);
   const [params, setParams] = useState<SceneParam>({min: null, max: null, countryCode: null});
+
+
+  useEffect(() => {
+     const urlSearchParams = new URLSearchParams(window.location.search);
+    const urlParams = Object.fromEntries(urlSearchParams.entries());
+    if(urlParams.flag && flagKeys.includes(urlParams.flag)) {
+      setParams({min: 1, max:1, countryCode: urlParams.flag})
+    }
+}, [] )
+
 
   function onChange(countryCode: string) {
     const { min, max } = getThreshold(countryCode);
@@ -41,7 +53,7 @@ function App() {
           </div>
         }
         { openCVLoaded ?
-          <FlagsSelect flags={flags} onChange={onChange} /> :
+          <FlagsSelect value={params.countryCode || ""} flags={flags} onChange={onChange} /> :
           <p>Loading Open CV</p>
         }
         <input

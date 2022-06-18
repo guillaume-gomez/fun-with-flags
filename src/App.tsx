@@ -46,7 +46,7 @@ function App() {
           <div className="flex flex-col justify-center items-center gap-12">
             <h5>Debug Zone</h5>
               <div className="flex flex-col gap-5">
-                <canvas id="canvasTest"></canvas>
+                <canvas id="canvasTest1"></canvas>
                 <canvas id="canvasTest2"></canvas>
                 <canvas id="contours"></canvas>
               </div>

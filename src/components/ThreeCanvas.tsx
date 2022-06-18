@@ -2,9 +2,11 @@ import React, { useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
-  generateFlagsByThreshold as utilGenerateFlagsByThreshold,
   generateFlagsByPixelsColorOccurance as utilGenerateFlagsByPixelsColorOccurance
- } from "../detectionToGeometry";
+ } from "../detectionToGeometryRange";
+ import {
+  generateFlagsByThreshold as utilGenerateFlagsByThreshold,
+ } from "../detectionToGeometryThreshold";
 import useOpenCV from "../customHooks/useOpenCV";
 import useAnimationFrame from "../customHooks/useAnimationFrame";
 import useWindowSize from "../customHooks/useWindowSize";
@@ -83,11 +85,8 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
   }, [canvasRef]);
 
   useEffect(() => {
-    console.log(countryCode)
-    console.log(min, max)
     if(min && max && countryCode) {
       // clear scenes
-      console.log("fjdkfkj")
       while(scene.current.children.length > 0) {
         scene.current.remove(scene.current.children[0]);
       }

@@ -1,4 +1,4 @@
-import cv, { Mat, MatVector } from "opencv-ts";
+import { Mat, MatVector } from "opencv-ts";
 import { computePalette } from "./palette";
 import { getParent } from "./hierarchyUtils";
 import { generateGeometry, fromContoursToGeometryVertices } from "./common";

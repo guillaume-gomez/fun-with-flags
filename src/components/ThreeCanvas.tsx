@@ -3,10 +3,10 @@ import * as THREE from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
   generateFlagsByPixelsColorOccurance as utilGenerateFlagsByPixelsColorOccurance
- } from "../detectionToGeometryRange";
+ } from "../lib/detectionToGeometryRange";
  import {
   generateFlagsByThreshold as utilGenerateFlagsByThreshold,
- } from "../detectionToGeometryThreshold";
+ } from "../lib/detectionToGeometryThreshold";
 import useOpenCV from "../customHooks/useOpenCV";
 import useAnimationFrame from "../customHooks/useAnimationFrame";
 import useWindowSize from "../customHooks/useWindowSize";

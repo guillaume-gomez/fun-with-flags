@@ -1,8 +1,33 @@
 import { Mat, MatVector } from "opencv-ts";
-import { computePalette } from "./palette";
+import { computePalette, getRandomColors } from "./palette";
 import { getParent } from "./hierarchyUtils";
 import { generateGeometry, fromContoursToGeometryVertices } from "./common";
 import * as THREE from 'three';
+
+interface Dic {
+    [key: string]: number
+}
+function checkColor(contours : MatVector, hierarchy: Mat, image: Mat, color: [number, number, number], index: number) : boolean {
+    const randomColors = getRandomColors(contours, hierarchy, index, image, 5);
+
+    const reduced = randomColors.reduce(function (acc: Dic, curr : [number, number, number]) {
+         return acc[curr.toString()] ? ++acc[curr.toString()] : acc[curr.toString()] = 1, acc
+    }, {});
+
+    // get the most occurs colors among the array of random colors + the middle point
+    let max = -1;
+    let colorChoosedStringified = "-1,-1,-1";
+    Object.entries(reduced).forEach(([colorStringified, occurences]) => {
+        if(max < occurences) {
+            max = occurences;
+            colorChoosedStringified = colorStringified;
+        }
+    });
+    const [R, G, B] = colorChoosedStringified.split(",").map(color => parseInt(color));
+
+
+    return R === color[0] && G === color[1] && B === color[2];
+}
 
 function generateGeometries(contours : MatVector, hierarchy: Mat, image: Mat, [R, G, B]: [number, number, number], index: number) : THREE.Mesh[] {
     let meshes : THREE.Mesh[] = [];
@@ -10,14 +35,19 @@ function generateGeometries(contours : MatVector, hierarchy: Mat, image: Mat, [R
     const offset = 0.1;
     const { rows, cols } =  image;
     for (let i = 0; i < contours.size(); ++i) {
+        // sometimes the color detection fails like tunisia (for example)
+        if(!checkColor(contours, hierarchy, image, [R, G, B], i)) {
+            continue;
+        }
         const contour = contours.get(i);
         const vertices = fromContoursToGeometryVertices(contour, rows, cols);
         const geometry = generateGeometry(vertices);
-        const color = new THREE.Color(R/255, G/255, B/255) //geneterateColour(contours, hierarchy, i, image);
-        const material = new THREE.MeshStandardMaterial({ color/*: Math.random() * 0x0FF05F*/, wireframe:false/*, side: THREE.DoubleSide*/ });
+        const color = new THREE.Color(R/255, G/255, B/255);
+        const material = new THREE.MeshStandardMaterial({ color/*: Math.random() * 0x0FF05F*/, wireframe:false });
         const mesh = new THREE.Mesh(geometry, material);
         const child = getParent(hierarchy, i);
-        mesh.position.z = index *  offset/* * child*/;
+        console.log(child)
+        mesh.position.z = index *  offset;
         meshes.push(mesh);
     }
     return meshes;

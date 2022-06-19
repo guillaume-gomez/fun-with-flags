@@ -57,7 +57,7 @@ function getRandomArbitrary(min: number, max: number) : number {
 
 // use montecarlo (pick random point in the shape to detect the color)
 // the problem can be the shape has children on it
-export function getRandomColors(contours: MatVector, hierarchy: Mat, contourIndex: number, image: Mat) : Array<[number, number, number]> {
+export function getRandomColors(contours: MatVector, hierarchy: Mat, contourIndex: number, image: Mat, nbColors: number = 20) : Array<[number, number, number]> {
     let colors : Array<[number, number, number]> = [];
     const coords = contours.get(contourIndex).data32S;
     const childrenIndexes = getChildren(hierarchy, contourIndex);
@@ -71,13 +71,18 @@ export function getRandomColors(contours: MatVector, hierarchy: Mat, contourInde
     const minY = Math.min(...YPoints);
     const maxY = Math.max(...YPoints);
 
-    while(colors.length <= 20) {
+    let exponentialBackoff = 50;
+
+    while(colors.length <= nbColors && exponentialBackoff >= 0 ) {
         const middleCoordX = Math.floor(getRandomArbitrary(minX, maxX));
         const middleCoordY = Math.floor(getRandomArbitrary(minY, maxY));
 
 
         if(isPointValid(contours, contourIndex, middleCoordX, middleCoordY, childrenIndexes)) {
             colors.push(getColor(image, middleCoordX, middleCoordY));
+            exponentialBackoff = 50;
+        } else {
+            exponentialBackoff--
         }
     }
     return colors;

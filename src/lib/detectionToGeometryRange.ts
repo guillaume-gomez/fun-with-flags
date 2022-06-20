@@ -31,8 +31,8 @@ function checkColor(contours : MatVector, hierarchy: Mat, image: Mat, color: [nu
 
 function generateGeometries(contours : MatVector, hierarchy: Mat, image: Mat, [R, G, B]: [number, number, number], index: number) : THREE.Mesh[] {
     let meshes : THREE.Mesh[] = [];
-    //const offset = 0.001;
-    const offset = 0.1;
+    const offsetColor = 0.1;
+    const offsetHierarchy = 0.3;
     const { rows, cols } =  image;
     for (let i = 0; i < contours.size(); ++i) {
         // sometimes the color detection fails like tunisia (for example)
@@ -46,8 +46,7 @@ function generateGeometries(contours : MatVector, hierarchy: Mat, image: Mat, [R
         const material = new THREE.MeshStandardMaterial({ color/*: Math.random() * 0x0FF05F*/, wireframe:false });
         const mesh = new THREE.Mesh(geometry, material);
         const child = getParent(hierarchy, i);
-        console.log(child)
-        mesh.position.z = index *  offset;
+        mesh.position.z = index * offsetColor + (child / (hierarchy.data32S.length/4)) * offsetHierarchy;
         meshes.push(mesh);
     }
     return meshes;

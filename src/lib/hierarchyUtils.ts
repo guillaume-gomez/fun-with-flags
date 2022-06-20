@@ -1,7 +1,7 @@
 import { Mat } from "opencv-ts";
 
 function getHierarchyForContours(hierarchy : Mat, index: number): [number, number, number, number] {
-    const next = hierarchy.data32S[index * hierarchy.channels()    ];
+    const next = hierarchy.data32S[index * hierarchy.channels()];
     const previous = hierarchy.data32S[index * hierarchy.channels() + 1];
     const child = hierarchy.data32S[index * hierarchy.channels() + 2];
     const parent = hierarchy.data32S[index * hierarchy.channels() + 3];

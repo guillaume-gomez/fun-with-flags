@@ -44,7 +44,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
       camera.current.aspect = width / height;
       camera.current.updateProjectionMatrix();
       //magic number here
-      renderer.current.setSize(width - 50, height);
+      renderer.current.setSize(width - 50, height - 50);
     }
   });
 
@@ -54,7 +54,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
       // Sizes
       const sizes = {
           width: window.innerWidth - 50,
-          height: 1000, //window.innerHeight
+          height: window.innerHeight - 50
       }
 
       scene.current.background = new THREE.Color( 0x3c3c3c );

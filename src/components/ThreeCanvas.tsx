@@ -48,7 +48,6 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
     }
   });
 
-
   useEffect(() => {
     if(canvasRef.current) {
       // Sizes

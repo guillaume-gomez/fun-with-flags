@@ -79,7 +79,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
       scene.current.add(createPlane());
       //scene.current.add(create3dPointLighting());
       scene.current.add(createLights());
-      scene.current.add(...createHelpers());
+      //scene.current.add(...createHelpers());
     }
   }, [canvasRef]);
 

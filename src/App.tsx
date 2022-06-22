@@ -19,12 +19,14 @@ function App() {
 
 
   useEffect(() => {
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const urlParams = Object.fromEntries(urlSearchParams.entries());
-    if(urlParams.flag && flagKeys.includes(urlParams.flag)) {
-      setParams({min: 1, max:1, countryCode: urlParams.flag})
+    if(openCVLoaded) {
+      const urlSearchParams = new URLSearchParams(window.location.search);
+      const urlParams = Object.fromEntries(urlSearchParams.entries());
+      if(urlParams.flag && flagKeys.includes(urlParams.flag)) {
+        setParams({min: 1, max:1, countryCode: urlParams.flag})
+      }
     }
-}, [] )
+}, [openCVLoaded] )
 
 
   function onChange(countryCode: string) {

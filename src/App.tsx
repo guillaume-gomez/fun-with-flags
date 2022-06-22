@@ -43,8 +43,8 @@ function App() {
 
   return (
     <div className="App">
-      <div className="flex flex-col justify-center items-center gap-12">
-        <div className="lg:absolute md:static lg:top-6 lg:left-8 lg:max-w-xs md:max-w-full md:w-full">
+      <div className="flex flex-col justify-center items-center gap-12 pt-5">
+        <div className="lg:absolute md:static lg:top-8 lg:left-8 lg:max-w-xs md:max-w-full md:w-full">
           <div className="card bg-base-100 shadow-xl w-full">
            <div className="card-body flex flex-col gap-5">
            {/*debugZone &&

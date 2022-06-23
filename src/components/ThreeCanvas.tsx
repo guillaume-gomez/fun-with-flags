@@ -9,7 +9,7 @@ import {
  } from "../lib/detectionToGeometryThreshold";
 import useOpenCV from "../customHooks/useOpenCV";
 import useAnimationFrame from "../customHooks/useAnimationFrame";
-import useWindowSize from "../customHooks/useWindowSize";
+import { useWindowSize, useFullscreen   } from "rooks";
 import { create3dPointLighting, createPlane, createHelpers, createLights } from "./threejsUtils";
 
 export interface SceneParam {
@@ -36,17 +36,25 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
   const camera = useRef<THREE.PerspectiveCamera | null>(null);
   const renderer = useRef<THREE.WebGLRenderer| null>(null);
   const { play, stop } = useAnimationFrame(animate);
+  const { innerWidth, innerHeight } = useWindowSize();
+  const {
+    toggle,
+    element,
+  } = useFullscreen();
 
-  useWindowSize((width: number, height: number) => {
-    if(canvasRef.current && camera.current && renderer.current) {
-      const width = window.innerWidth;
-      const height = window.innerHeight;
+
+  useEffect(() => {
+    if(canvasRef.current && camera.current && renderer.current && innerWidth && innerHeight) {
+      const width = innerWidth;
+      const height = innerHeight;
       camera.current.aspect = width / height;
       camera.current.updateProjectionMatrix();
       //magic number here
       renderer.current.setSize(width - 50, height - 50);
     }
-  });
+  }, [innerWidth, innerHeight]);
+
+
 
   useEffect(() => {
     if(canvasRef.current) {
@@ -150,7 +158,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
   }
 
   return (
-    <canvas ref={canvasRef} className="webgl"></canvas>
+    <canvas ref={canvasRef} className="webgl" onDoubleClick={e => toggle(e.target as any)}></canvas>
   );
 }
 

@@ -24,7 +24,7 @@ export function computePalette(image: Mat) : pixel[] {
     }
   }
 
-  const filteredColorInImage : Array<[string, number]> = filterColorInImageTo(colorsInImage, image.cols * image.rows, .01);
+  const filteredColorInImage : Array<[string, number]> = filterColorInImageTo(colorsInImage, image.cols * image.rows, .005);
 
   const palette : pixel[] = filteredColorInImage.map(([pixel, _]) => convertPixelStringToPixelNumber(pixel));
   return palette;

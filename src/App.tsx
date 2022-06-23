@@ -42,11 +42,11 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <div className="flex flex-col justify-center items-center gap-12 pt-5">
+    <div className="App p-5">
+      <div className="flex flex-col justify-center gap-5">
         <div className="lg:absolute md:static lg:top-8 lg:left-8 lg:max-w-xs md:max-w-full md:w-full">
-          <div className="card bg-base-100 shadow-xl w-full">
-           <div className="card-body flex flex-col gap-5">
+          <div className="card bg-base-100 shadow-2xl w-full">
+           <div className="card-body p-3 flex flex-col gap-5">
            {/*debugZone &&
               <div className="flex flex-col justify-center items-center gap-12">
                 <h5>Debug Zone</h5>
@@ -71,6 +71,7 @@ function App() {
                 />
                 <label>Velocity : {velocity * 1000}</label>
               </div>
+              <p className="text-xs">Double click to switch to fullscreen</p>
               <div id="image-container">
                   {
                     flags.map(({key, name}) =>

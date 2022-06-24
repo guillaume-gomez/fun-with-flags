@@ -20,14 +20,16 @@ export interface SceneParam {
 
 
 interface ThreeCanvasProps {
- params: SceneParam;
- velocity: number;
+  params: SceneParam;
+  width: number;
+  height: number;
+  velocity: number;
 }
 
 const MAX_Z = 0.3;
 const MIN_Z = 0;
 
-function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvasProps) {
+function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height} : ThreeCanvasProps) {
   const { cv } = useOpenCV();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scene = useRef(new THREE.Scene());
@@ -36,7 +38,6 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
   const camera = useRef<THREE.PerspectiveCamera | null>(null);
   const renderer = useRef<THREE.WebGLRenderer| null>(null);
   const { play, stop } = useAnimationFrame(animate);
-  const { innerWidth, innerHeight } = useWindowSize();
   const {
     toggle,
     element,
@@ -44,15 +45,13 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
 
 
   useEffect(() => {
-    if(canvasRef.current && camera.current && renderer.current && innerWidth && innerHeight) {
-      const width = innerWidth;
-      const height = innerHeight;
+    if(canvasRef.current && camera.current && renderer.current && width && height) {
       camera.current.aspect = width / height;
       camera.current.updateProjectionMatrix();
       //magic number here
-      renderer.current.setSize(width - 50, height - 50);
+      renderer.current.setSize(width, height);
     }
-  }, [innerWidth, innerHeight]);
+  }, [width, height]);
 
 
 
@@ -60,8 +59,8 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
     if(canvasRef.current) {
       // Sizes
       const sizes = {
-          width: window.innerWidth - 50,
-          height: window.innerHeight - 50
+          width: window.innerWidth,
+          height: window.innerHeight
       }
 
       scene.current.background = new THREE.Color( 0x3c3c3c );
@@ -127,7 +126,6 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity} : ThreeCanvas
           flagItem.position.z += groupRefDirections.current[index] * velocity;
         });
       }
-      //console.log(groupRef.current)
     }
   }
 

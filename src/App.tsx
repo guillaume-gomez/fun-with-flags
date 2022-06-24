@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { sortBy } from "lodash";
+import { useWindowSize } from "rooks";
 import useOpenCV from "./customHooks/useOpenCV";
 import { FlagData, generateFlagParams, getThreshold,listOfFlagKeys } from "./flagsConfig";
 import FlagsSelect from "./components/FlagsSelect";
@@ -12,6 +13,10 @@ function App() {
   const { openCVLoaded } = useOpenCV();
   const [velocity, setVelocity] = useState<number>(0.001);
   //const [debugZone] = useState<boolean>(false);
+  const { innerWidth, innerHeight } = useWindowSize();
+  const refContainer = useRef<HTMLDivElement>(null);
+  const [widthContainer, setWidthContainer] = useState<number>(500);
+  const [heightContainer, setHeightContainer] = useState<number>(500);
   const [flags] = useState<FlagData[]>(sortBy(generateFlagParams(), 'name'));
   const [minThresholdInput, setMinThresholdInput] = useState<number>(100);
   const [maxThresholdInput, setMaxThresholdInput] = useState<number>(200);
@@ -26,7 +31,16 @@ function App() {
         setParams({min: 1, max:1, countryCode: urlParams.flag})
       }
     }
-}, [openCVLoaded] )
+  }, [openCVLoaded]);
+
+  useEffect(() => {
+    if(refContainer.current && innerHeight && innerWidth) {
+      const rect = refContainer.current.getBoundingClientRect();
+      setWidthContainer(rect.width);
+      // make sure the height is not too important
+      setHeightContainer(innerHeight - 50);
+    }
+  }, [innerWidth, innerHeight, refContainer]);
 
 
   function onChange(countryCode: string) {
@@ -43,7 +57,7 @@ function App() {
 
   return (
     <div className="App p-5">
-      <div className="flex flex-col justify-center gap-5">
+      <div className="flex flex-col justify-center gap-5" ref={refContainer}>
         <div className="lg:absolute md:static lg:top-8 lg:left-8 lg:max-w-xs md:max-w-full md:w-full">
           <div className="card bg-base-100 shadow-2xl w-full">
            <div className="card-body p-3 flex flex-col gap-5">
@@ -88,7 +102,12 @@ function App() {
             </div>
           </div>
         </div>
-        <ThreeCanvas params={params} velocity={velocity}/>
+        <ThreeCanvas
+          params={params}
+          velocity={velocity}
+          width={widthContainer}
+          height={heightContainer}
+        />
       </div>
     </div>
   );

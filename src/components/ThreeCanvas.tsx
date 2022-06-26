@@ -137,8 +137,9 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
     group.add(...meshes);
 
     const bbox = new THREE.Box3().setFromObject(group);
-    console.log(bbox)
     group.position.set(-(bbox.min.x + bbox.max.x) / 2, -(bbox.min.y + bbox.max.y), -(bbox.min.z + bbox.max.z) / 2);
+    console.log(bbox)
+    console.log(bbox.min.z + bbox.max.z)
 
     // add ref for the render
     groupRef.current = group;

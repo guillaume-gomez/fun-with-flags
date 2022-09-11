@@ -80,8 +80,9 @@ function App() {
                   className="range range-primary"
                   min={0}
                   max={10}
+                  step={0.01}
                   value={velocity * 1000}
-                  onChange={(e) => setVelocity(parseInt(e.target.value,10)/1000)}
+                  onChange={(e) => setVelocity(parseFloat(e.target.value)/1000)}
                 />
                 <label>Velocity : {velocity * 1000}</label>
               </div>

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import {
@@ -9,8 +9,8 @@ import {
  } from "../lib/detectionToGeometryThreshold";
 import useOpenCV from "../customHooks/useOpenCV";
 import useAnimationFrame from "../customHooks/useAnimationFrame";
-import { useWindowSize, useFullscreen   } from "rooks";
-import { create3dPointLighting, createPlane, createHelpers, createLights } from "./threejsUtils";
+import { useFullscreen   } from "rooks";
+import { createPlane, createLights } from "./threejsUtils";
 
 export interface SceneParam {
   min: number | null;
@@ -37,10 +37,10 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
   const groupRefDirections = useRef<number[]>([]);
   const camera = useRef<THREE.PerspectiveCamera | null>(null);
   const renderer = useRef<THREE.WebGLRenderer| null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
   const { play, stop } = useAnimationFrame(animate);
   const {
-    toggle,
-    element,
+    toggle
   } = useFullscreen();
 
 
@@ -92,6 +92,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
 
   useEffect(() => {
     if(min && max && countryCode) {
+      setLoading(true);
       // clear scenes
       while(scene.current.children.length > 0) {
         scene.current.remove(scene.current.children[0]);
@@ -103,9 +104,10 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
       scene.current.add(createLights());
       //scene.current.add(...createHelpers());
       scene.current.add(generateFlagsByPixelsColorOccurance(countryCode));
+      setLoading(false);
 
     }
-  }, [min, max, countryCode]);
+  }, [min, max, countryCode, setLoading]);
 
   useEffect(() => {
     stop();
@@ -131,7 +133,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
 
   // find all the colors in the image and run findcountours based on this colors
   function generateFlagsByPixelsColorOccurance(imageDomId: string) : THREE.Group {
-    const meshes = utilGenerateFlagsByPixelsColorOccurance(cv, imageDomId);
+    const meshes = utilGenerateFlagsByPixelsColorOccurance(imageDomId);
     let group = new THREE.Group();
     group.name = "MY_FLAG_GROUP";
     group.add(...meshes);
@@ -157,7 +159,11 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
   }
 
   return (
-    <canvas ref={canvasRef} className="webgl" onDoubleClick={e => toggle(e.target as any)}></canvas>
+
+    <div>
+      { loading ? <button className="btn loading lg:absolute md:static lg:top-1/2 lg:left-1/2">loading</button> : <></> }
+      <canvas ref={canvasRef} className="webgl" onDoubleClick={e => toggle(e.target as any)}></canvas>
+    </div>
   );
 }
 

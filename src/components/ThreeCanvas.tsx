@@ -62,7 +62,6 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
           width: window.innerWidth,
           height: window.innerHeight
       }
-
       scene.current.background = new THREE.Color( 0x3c3c3c );
 
 

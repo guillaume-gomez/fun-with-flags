@@ -10,7 +10,7 @@ import {
 import useOpenCV from "../customHooks/useOpenCV";
 import useAnimationFrame from "../customHooks/useAnimationFrame";
 import { useWindowSize, useFullscreen   } from "rooks";
-import { create3dPointLighting, createPlane, createHelpers, createLights } from "./threejsUtils";
+import { createPlane, createLights } from "./threejsUtils";
 
 export interface SceneParam {
   min: number | null;
@@ -84,9 +84,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
       controls.enablePan = true;
 
       scene.current.add(createPlane());
-      //scene.current.add(create3dPointLighting());
       scene.current.add(createLights());
-      //scene.current.add(...createHelpers());
     }
   }, [canvasRef]);
 
@@ -99,9 +97,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
       groupRef.current = null;
 
       scene.current.add(createPlane());
-      //scene.current.add(create3dPointLighting());
       scene.current.add(createLights());
-      //scene.current.add(...createHelpers());
       scene.current.add(generateFlagsByPixelsColorOccurance(countryCode));
 
     }
@@ -138,8 +134,6 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
 
     const bbox = new THREE.Box3().setFromObject(group);
     group.position.set(-(bbox.min.x + bbox.max.x) / 2, -(bbox.min.y + bbox.max.y), -(bbox.min.z + bbox.max.z) / 2);
-    console.log(bbox)
-    console.log(bbox.min.z + bbox.max.z)
 
     // add ref for the render
     groupRef.current = group;

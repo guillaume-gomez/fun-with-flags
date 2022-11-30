@@ -3,6 +3,7 @@ import { computePalette, getRandomColors } from "./palette";
 import { getParent } from "./hierarchyUtils";
 import { generateGeometry, fromContoursToGeometryVertices } from "./common";
 import * as THREE from 'three';
+import cv from "opencv-ts";
 
 interface Dic {
     [key: string]: number
@@ -54,7 +55,7 @@ function generateGeometries(contours : MatVector, hierarchy: Mat, image: Mat, [R
 
 
 // find all the colors in the image and run findcountours based on this colors
-export function generateFlagsByPixelsColorOccurance(cv: any, imageDomId: string) : THREE.Mesh[] {
+export function generateFlagsByPixelsColorOccurance(imageDomId: string) : THREE.Mesh[] {
     const src = cv.imread(imageDomId);
     const colorPixels = computePalette(src);
     let meshes : THREE.Mesh[] = [];
@@ -62,8 +63,8 @@ export function generateFlagsByPixelsColorOccurance(cv: any, imageDomId: string)
 
     let binaryThreshold: Mat = new cv.Mat.zeros(src.rows, src.cols, cv.CV_8UC3);
     colorPixels.forEach(([r, g, b], index) => {
-      let low = new cv.Mat(src.rows, src.cols, src.type(), [r - 1, g - 1, b -1, 255]);
-      let high = new cv.Mat(src.rows, src.cols, src.type(), [r + 1, g + 1, b + 1, 255]);
+      let low = new cv.Mat(src.rows, src.cols, src.type(), new cv.Scalar(r - 1, g - 1, b -1, 255));
+      let high = new cv.Mat(src.rows, src.cols, src.type(), new cv.Scalar(r + 1, g + 1, b + 1, 255));
 
       let contours : MatVector = new cv.MatVector();
       let hierarchy : Mat = new cv.Mat();

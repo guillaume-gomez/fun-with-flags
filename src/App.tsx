@@ -37,8 +37,7 @@ function App() {
     if(refContainer.current && innerHeight && innerWidth) {
       const rect = refContainer.current.getBoundingClientRect();
       setWidthContainer(rect.width);
-      // make sure the height is not too important
-      setHeightContainer(innerHeight - 50);
+      setHeightContainer(innerHeight);
     }
   }, [innerWidth, innerHeight, refContainer]);
 
@@ -56,7 +55,7 @@ function App() {
   }
 
   return (
-    <div className="App p-5">
+    <div className="App">
       <div className="flex flex-col justify-center gap-5" ref={refContainer}>
         <div className="lg:absolute md:static lg:top-8 lg:left-8 lg:max-w-xs md:max-w-full md:w-full">
           <div className="card bg-base-100 shadow-2xl w-full">
@@ -80,8 +79,9 @@ function App() {
                   className="range range-primary"
                   min={0}
                   max={10}
+                  step={0.01}
                   value={velocity * 1000}
-                  onChange={(e) => setVelocity(parseInt(e.target.value,10)/1000)}
+                  onChange={(e) => setVelocity(parseFloat(e.target.value)/1000)}
                 />
                 <label>Velocity : {velocity * 1000}</label>
               </div>

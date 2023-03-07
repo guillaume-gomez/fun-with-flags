@@ -1,13 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import {
-  generateFlagsByPixelsColorOccurance as utilGenerateFlagsByPixelsColorOccurance
- } from "../lib/detectionToGeometryRange";
  import {
-  generateFlagsByThreshold as utilGenerateFlagsByThreshold,
- } from "../lib/detectionToGeometryThreshold";
-import useOpenCV from "../customHooks/useOpenCV";
+  generateGeometriesByNumberOfColors as utilGenerateFlagsByPixelsColorOccurance,
+} from "colors2geometries";
 import useAnimationFrame from "../customHooks/useAnimationFrame";
 import { useFullscreen } from "rooks";
 import { createPlane, createLights } from "./threejsUtils";
@@ -30,7 +26,6 @@ const MAX_Z = 0.3;
 const MIN_Z = 0;
 
 function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height} : ThreeCanvasProps) {
-  const { cv } = useOpenCV();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scene = useRef(new THREE.Scene());
   const groupRef = useRef<THREE.Group|null>(null);
@@ -144,15 +139,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
     return group;
   }
 
-  //use threshold to detect colors and shape with a binarythreshold and its opposite
-  // deprecated :)
-  function generateFlagsByThreshold(imageDomId :string, minThreshold: number, maxThreshold: number) {
-    const meshes = utilGenerateFlagsByThreshold(cv, imageDomId, minThreshold, maxThreshold);
-    scene.current.add(...meshes);
-  }
-
   return (
-
     <div>
       { loading ? <button className="btn loading lg:absolute md:static lg:top-1/2 lg:left-1/2">loading</button> : <></> }
       <canvas ref={canvasRef} className="webgl" onDoubleClick={e => toggle(e.target as any)}></canvas>

@@ -35,7 +35,8 @@ function ThreeCanvas({params: { min, max, countryCode, alignMeshes }, velocity, 
   const camera = useRef<THREE.PerspectiveCamera | null>(null);
   const renderer = useRef<THREE.WebGLRenderer| null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [originalPositions, setOriginalPositions] = useState<THREE.Vector3[]>([]);
+  const [originalPositionsZ, setOriginalPositionsZ] = useState<number[]>([]);
+  const [group, setGroup] = useState<THREE.Group>();
   const { play, stop } = useAnimationFrame(animate);
   const {
     toggle
@@ -102,17 +103,21 @@ function ThreeCanvas({params: { min, max, countryCode, alignMeshes }, velocity, 
     }
   }, [min, max, countryCode, setLoading]);
 
-/*  useEffect(() => {
+  useEffect(() => {
+    if(!groupRef.current) {
+      return;
+    }
+
     if(alignMeshes) {
-      group.children.map((child : any, index: number) => {
-        child.position = index * 0.001;
+      groupRef.current.children.map((child : any, index: number) => {
+        child.position.z = index * 0.001;
       });
     } else {
-      group.children.map((child : any, index: number) => {
-        child.position = originalPositions[index];
+      groupRef.current.children.map((child : any, index: number) => {
+        child.position.z = originalPositionsZ[index];
       });
     }
-  }, [alignMeshes])*/
+  }, [alignMeshes])
 
   useEffect(() => {
     stop();
@@ -139,16 +144,10 @@ function ThreeCanvas({params: { min, max, countryCode, alignMeshes }, velocity, 
   // find all the colors in the image and run findcountours based on this colors
   function generateFlagsByPixelsColorOccurance(imageDomId: string) : THREE.Group {
     const meshes = utilGenerateFlagsByPixelsColorOccurance(imageDomId);
-    setOriginalPositions(originalPositionMeshes(meshes));
+    setOriginalPositionsZ(originalPositionMeshes(meshes).map(position => position.z));
 
     let group = new THREE.Group();
     group.name = "MY_FLAG_GROUP";
-
-    //debug to remove
-    meshes.forEach((mesh, index) => {
-      mesh.position.z = 0.001 * index;
-    });
-
     group.add(...meshes);
 
     const bbox = new THREE.Box3().setFromObject(group);
@@ -158,7 +157,6 @@ function ThreeCanvas({params: { min, max, countryCode, alignMeshes }, velocity, 
     groupRef.current = group;
     // store the direction for move
     groupRefDirections.current = group.children.map(flagItem => 1);
-
     return group;
   }
 

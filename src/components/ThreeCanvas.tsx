@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
  import {
   generateGeometriesByNumberOfColors as utilGenerateFlagsByPixelsColorOccurance,
+  originalPositionMeshes
 } from "colors2geometries";
 import useAnimationFrame from "../customHooks/useAnimationFrame";
 import { useFullscreen } from "rooks";
@@ -12,6 +13,7 @@ export interface SceneParam {
   min: number | null;
   max: number | null;
   countryCode: string | null;
+  alignMeshes: boolean;
 }
 
 
@@ -25,7 +27,7 @@ interface ThreeCanvasProps {
 const MAX_Z = 0.3;
 const MIN_Z = 0;
 
-function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height} : ThreeCanvasProps) {
+function ThreeCanvas({params: { min, max, countryCode, alignMeshes }, velocity, width, height} : ThreeCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scene = useRef(new THREE.Scene());
   const groupRef = useRef<THREE.Group|null>(null);
@@ -33,6 +35,7 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
   const camera = useRef<THREE.PerspectiveCamera | null>(null);
   const renderer = useRef<THREE.WebGLRenderer| null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [originalPositions, setOriginalPositions] = useState<THREE.Vector3[]>([]);
   const { play, stop } = useAnimationFrame(animate);
   const {
     toggle
@@ -99,6 +102,18 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
     }
   }, [min, max, countryCode, setLoading]);
 
+/*  useEffect(() => {
+    if(alignMeshes) {
+      group.children.map((child : any, index: number) => {
+        child.position = index * 0.001;
+      });
+    } else {
+      group.children.map((child : any, index: number) => {
+        child.position = originalPositions[index];
+      });
+    }
+  }, [alignMeshes])*/
+
   useEffect(() => {
     stop();
     play();
@@ -124,8 +139,16 @@ function ThreeCanvas({params: { min, max, countryCode }, velocity, width, height
   // find all the colors in the image and run findcountours based on this colors
   function generateFlagsByPixelsColorOccurance(imageDomId: string) : THREE.Group {
     const meshes = utilGenerateFlagsByPixelsColorOccurance(imageDomId);
+    setOriginalPositions(originalPositionMeshes(meshes));
+
     let group = new THREE.Group();
     group.name = "MY_FLAG_GROUP";
+
+    //debug to remove
+    meshes.forEach((mesh, index) => {
+      mesh.position.z = 0.001 * index;
+    });
+
     group.add(...meshes);
 
     const bbox = new THREE.Box3().setFromObject(group);

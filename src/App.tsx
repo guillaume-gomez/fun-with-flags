@@ -20,7 +20,7 @@ function App() {
   const [flags] = useState<FlagData[]>(sortBy(generateFlagParams(), 'name'));
   const [minThresholdInput, setMinThresholdInput] = useState<number>(100);
   const [maxThresholdInput, setMaxThresholdInput] = useState<number>(200);
-  const [params, setParams] = useState<SceneParam>({min: null, max: null, countryCode: null});
+  const [params, setParams] = useState<SceneParam>({min: null, max: null, countryCode: null, alignMeshes: false });
 
 
   useEffect(() => {
@@ -28,7 +28,7 @@ function App() {
       const urlSearchParams = new URLSearchParams(window.location.search);
       const urlParams = Object.fromEntries(urlSearchParams.entries());
       if(urlParams.flag && flagKeys.includes(urlParams.flag)) {
-        setParams({min: 1, max:1, countryCode: urlParams.flag})
+        setParams({min: 1, max:1, countryCode: urlParams.flag, alignMeshes: false })
       }
     }
   }, [openCVLoaded]);
@@ -44,14 +44,14 @@ function App() {
 
   function onChange(countryCode: string) {
     const { min, max } = getThreshold(countryCode);
-    setParams({min, max, countryCode});
+    setParams({min, max, countryCode, alignMeshes: false});
     setMinThresholdInput(min);
     setMaxThresholdInput(max);
     window.history.replaceState(null, "", `?flag=${countryCode}`);
   }
 
   function reRunDebug() {
-    setParams({...params , min: minThresholdInput, max: maxThresholdInput})
+    setParams({...params , min: minThresholdInput, max: maxThresholdInput, alignMeshes: false })
   }
 
   return (
@@ -84,6 +84,17 @@ function App() {
                   onChange={(e) => setVelocity(parseFloat(e.target.value)/1000)}
                 />
                 <label>Velocity : {velocity * 1000}</label>
+              </div>
+              <div className="form-control">
+                <label className="label cursor-pointer">
+                  <span className="label-text">Align all shapes</span>
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary"
+                    checked={params.alignMeshes}
+                    onClick={() => setParams({...params, alignMeshes: !params.alignMeshes })}
+                  />
+                </label>
               </div>
               <p className="text-xs">Double click to switch to fullscreen</p>
               <div id="image-container">

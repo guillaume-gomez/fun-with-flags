@@ -10,8 +10,6 @@ import { useFullscreen } from "rooks";
 import { createPlane, createLights } from "./threejsUtils";
 
 export interface SceneParam {
-  min: number | null;
-  max: number | null;
   countryCode: string | null;
   alignMeshes: boolean;
 }
@@ -27,7 +25,7 @@ interface ThreeCanvasProps {
 const MAX_Z = 0.3;
 const MIN_Z = 0;
 
-function ThreeCanvas({params: { min, max, countryCode, alignMeshes }, velocity, width, height} : ThreeCanvasProps) {
+function ThreeCanvas({params: { countryCode, alignMeshes }, velocity, width, height} : ThreeCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scene = useRef(new THREE.Scene());
   const groupRef = useRef<THREE.Group|null>(null);
@@ -36,7 +34,6 @@ function ThreeCanvas({params: { min, max, countryCode, alignMeshes }, velocity, 
   const renderer = useRef<THREE.WebGLRenderer| null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [originalPositionsZ, setOriginalPositionsZ] = useState<number[]>([]);
-  const [group, setGroup] = useState<THREE.Group>();
   const { play, stop } = useAnimationFrame(animate);
   const {
     toggle
@@ -87,7 +84,7 @@ function ThreeCanvas({params: { min, max, countryCode, alignMeshes }, velocity, 
   }, [canvasRef]);
 
   useEffect(() => {
-    if(min && max && countryCode) {
+    if(countryCode) {
       setLoading(true);
       // clear scenes
       while(scene.current.children.length > 0) {
@@ -101,7 +98,7 @@ function ThreeCanvas({params: { min, max, countryCode, alignMeshes }, velocity, 
       setLoading(false);
 
     }
-  }, [min, max, countryCode, setLoading]);
+  }, [countryCode, setLoading]);
 
   useEffect(() => {
     if(!groupRef.current) {
@@ -109,11 +106,11 @@ function ThreeCanvas({params: { min, max, countryCode, alignMeshes }, velocity, 
     }
 
     if(alignMeshes) {
-      groupRef.current.children.map((child : any, index: number) => {
+      groupRef.current.children.forEach((child : any, index: number) => {
         child.position.z = index * 0.001;
       });
     } else {
-      groupRef.current.children.map((child : any, index: number) => {
+      groupRef.current.children.forEach((child : any, index: number) => {
         child.position.z = originalPositionsZ[index];
       });
     }

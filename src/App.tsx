@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { sortBy } from "lodash";
 import { useWindowSize } from "rooks";
 import useOpenCV from "./customHooks/useOpenCV";
-import { FlagData, generateFlagParams, getThreshold,listOfFlagKeys } from "./flagsConfig";
+import { FlagData, generateFlagParams,listOfFlagKeys } from "./flagsConfig";
 import FlagsSelect from "./components/FlagsSelect";
 import ThreeCanvas, { SceneParam } from "./components/ThreeCanvas";
 import './App.css';
@@ -18,9 +18,7 @@ function App() {
   const [widthContainer, setWidthContainer] = useState<number>(500);
   const [heightContainer, setHeightContainer] = useState<number>(500);
   const [flags] = useState<FlagData[]>(sortBy(generateFlagParams(), 'name'));
-  const [minThresholdInput, setMinThresholdInput] = useState<number>(100);
-  const [maxThresholdInput, setMaxThresholdInput] = useState<number>(200);
-  const [params, setParams] = useState<SceneParam>({min: null, max: null, countryCode: null, alignMeshes: false });
+  const [params, setParams] = useState<SceneParam>({countryCode: null, alignMeshes: false });
 
 
   useEffect(() => {
@@ -28,7 +26,7 @@ function App() {
       const urlSearchParams = new URLSearchParams(window.location.search);
       const urlParams = Object.fromEntries(urlSearchParams.entries());
       if(urlParams.flag && flagKeys.includes(urlParams.flag)) {
-        setParams({min: 1, max:1, countryCode: urlParams.flag, alignMeshes: false })
+        setParams({ countryCode: urlParams.flag, alignMeshes: false })
       }
     }
   }, [openCVLoaded]);
@@ -43,15 +41,8 @@ function App() {
 
 
   function onChange(countryCode: string) {
-    const { min, max } = getThreshold(countryCode);
-    setParams({min, max, countryCode, alignMeshes: false});
-    setMinThresholdInput(min);
-    setMaxThresholdInput(max);
+    setParams({countryCode, alignMeshes: false});
     window.history.replaceState(null, "", `?flag=${countryCode}`);
-  }
-
-  function reRunDebug() {
-    setParams({...params , min: minThresholdInput, max: maxThresholdInput, alignMeshes: false })
   }
 
   return (

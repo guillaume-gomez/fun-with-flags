@@ -107,7 +107,7 @@ function ThreeCanvas({params: { countryCode, alignMeshes }, velocity, width, hei
 
     if(alignMeshes) {
       groupRef.current.children.forEach((child : any, index: number) => {
-        child.position.z = index * 0.001;
+        child.position.z = index * 0.0001;
       });
     } else {
       groupRef.current.children.forEach((child : any, index: number) => {

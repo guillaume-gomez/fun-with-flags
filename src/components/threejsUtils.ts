@@ -70,7 +70,7 @@ export function createLights() : THREE.Object3D {
 
  export function createPlane(): THREE.Mesh {
     const planeGeometry = new THREE.BoxGeometry(2.5, 2.5, 0.5);
-    const planeMaterial = new THREE.MeshStandardMaterial({ color: 0xAAAAAA, metalness: 0.5 });
+    const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x4D4D4D, metalness: 0.5 });
     const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
     planeMesh.rotateX(-Math.PI/2);
     planeMesh.position.setY(-0.25);

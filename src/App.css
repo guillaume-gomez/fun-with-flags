@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'RobotoMedium', sans-serif;
+  }
+}
+
+[data-theme="mytheme"] .range {
+    border-radius: 0.5rem;
+}
+
+[data-theme="mytheme"] .range::-webkit-slider-thumb {
+    border-radius: 50%;
+}
+
+[data-theme="mytheme"] .range::-moz-range-thumb {
+    border-radius: 50%;
+}

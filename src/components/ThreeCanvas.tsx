@@ -58,7 +58,7 @@ function ThreeCanvas({params: { countryCode, alignMeshes }, velocity, width, hei
           width: window.innerWidth,
           height: window.innerHeight
       }
-      scene.current.background = new THREE.Color( 0x3c3c3c );
+      scene.current.background = new THREE.Color( 0x4D4D4D );
 
 
       // Camera

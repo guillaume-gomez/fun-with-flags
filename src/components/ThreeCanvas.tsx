@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
  import {
-  generateGeometriesByNumberOfColors as utilGenerateFlagsByPixelsColorOccurance,
+  generateGeometriesByColorOccurance as utilGenerateFlagsByPixelsColorOccurance,
   originalPositionMeshes
 } from "colors2geometries";
 import useAnimationFrame from "../customHooks/useAnimationFrame";

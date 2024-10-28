@@ -6,6 +6,7 @@ import { FlagData, generateFlagParams,listOfFlagKeys } from "./flagsConfig";
 import FlagsSelect from "./components/FlagsSelect";
 import ThreeCanvas, { SceneParam } from "./components/ThreeCanvas";
 import Help3D from "./components/Help3D";
+import CopyToClipboardButton from "./components/CopyToClipboardButton";
 import './App.css';
 
 const flagKeys = listOfFlagKeys();
@@ -88,6 +89,7 @@ function App() {
                   />
                 </label>
               </div>
+              <CopyToClipboardButton initialLabel={"Share flag"}/>
               <Help3D />
               <p className="text-xs">Double click to switch to fullscreen</p>
               <div id="image-container">
